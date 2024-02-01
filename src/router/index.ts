@@ -10,6 +10,11 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/create-game',
+      name: 'create',
+      component: () => import('../views/CreateView.vue')
+    },
+    {
       path: '/lobby',
       name: 'lobby',
       // route level code-splitting

@@ -2,9 +2,12 @@
 import { ref } from 'vue'
 import { useAsyncState } from '@vueuse/core'
 import { authUser, type AuthenticatedUser } from '@/api/api'
+import { useRouter } from 'vue-router'
 import { type FormValidationError, NAlert } from 'naive-ui'
 
 import DRLoginForm from '@/components/DRLoginForm.vue'
+
+const router = useRouter()
 
 const formValue = ref({
   uname: '',
@@ -26,7 +29,19 @@ async function submitForm(validationErrors: FormValidationError) {
     return
   }
 
-  await execute()
+  if (localStorage.getItem('authenticatedUser') && localStorage.getItem('authenticatedUserId')) {
+    router.push({ name: 'create' })
+    return
+  }
+
+  await execute().then((res) => {
+    if (res) {
+      localStorage.setItem('authenticatedUser', res.auth)
+      localStorage.setItem('authenticatedUserId', res.id)
+
+      router.push({ name: 'create' })
+    }
+  })
 }
 </script>
 
