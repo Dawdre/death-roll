@@ -2,9 +2,13 @@
 import { fetchAuthenticatedUser, fetchGameTurn } from '@/api/api'
 import { useEventSource } from '@/composables/useEventSource'
 import { useAsyncState } from '@vueuse/core'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { NCard, NButton, NInput, NFormItem, NNumberAnimation } from 'naive-ui'
+import { NCard, NButton, NInput, NH2, NNumberAnimation, NTimeline, NTimelineItem } from 'naive-ui'
+
+import DRPage from '@/components/DRPage.vue'
+import DRHeader from '@/components/DRHeader.vue'
+import DRPlayer from '@/components/DRPlayer.vue'
 
 const route = useRoute()
 
@@ -29,12 +33,7 @@ const gameUrlParams = {
   user: authenticatedUserId ?? '',
   game: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 }
-const {
-  eventSourceGameData: gameStream,
-  startStream,
-  closeEventSource,
-  eventSourceError
-} = useEventSource(true)
+const { eventSourceGameData: gameStream, startStream } = useEventSource(true)
 
 startStream(gameUrlParams)
 
@@ -42,6 +41,9 @@ const { state: gameTurn, execute: takeTurn } = useAsyncState(fetchGameTurn, null
   throwError: true,
   immediate: false
 })
+
+const getPlayerName = (id: string) =>
+  computed(() => gameStream.value?.gameLobby.players.find((player) => player.id === id)?.name)
 
 async function roll() {
   if (myRoll.value.startsWith(`/roll ${gameStream.value?.currentRoll}`)) {
@@ -60,24 +62,52 @@ async function roll() {
 </script>
 
 <template>
-  <n-card v-if="gameStream" title="Game">
-    <h2>
-      <n-number-animation :from="0" :to="gameStream.currentRoll" :show-separator="true" />
-      {{ gameStream.winnerID ? 'Winner!' : '' }}
-    </h2>
-    <n-form-item>
-      <n-input
-        v-model:value="myRoll"
-        :disabled="gameStream.playerTurn !== userInfo?.id"
-        @keydown.enter="roll"
-      />
-    </n-form-item>
-    <n-button v-if="gameStream.playerTurn === userInfo?.id" @click="roll">Roll!</n-button>
-  </n-card>
-  <div v-if="gameStream">{{ gameStream }}</div>
-  <div>{{ userInfo?.auth }}</div>
+  <d-r-page page-class="dr-game">
+    <d-r-header />
+    <template v-if="gameStream">
+      <n-h2 class="dr-game__heading" style="font-size: 2rem">
+        {{ gameStream.gameLobby.name }}
+      </n-h2>
+
+      <n-card>
+        <n-h2 class="dr-game__heading">
+          <template v-if="gameStream.winnerID">
+            {{ getPlayerName(gameStream.winnerID).value }} WINS!
+          </template>
+          <template v-else-if="gameStream.playerTurn === userInfo?.id"> IT'S YOUR TURN! </template>
+          <template v-else>
+            {{ getPlayerName(gameStream.playerTurn).value?.toUpperCase() }}'S TURN!
+          </template>
+        </n-h2>
+        <n-h2 v-if="!gameStream.winnerID" style="text-shadow: 2px 2px black; margin-top: 0">
+          The current roll is
+          <n-number-animation :from="0" :to="gameStream.currentRoll" :show-separator="true" />
+        </n-h2>
+        <n-timeline>
+          <n-timeline-item v-for="action in gameStream.actionHistory" :key="action.playerID">
+            <span style="text-shadow: 2px 2px black">{{ action.actionDetails }}</span>
+          </n-timeline-item>
+        </n-timeline>
+        <n-input
+          v-if="gameStream.playerTurn === userInfo?.id"
+          v-model:value="myRoll"
+          @keydown.enter="roll"
+        />
+        <n-button v-if="gameStream.playerTurn === userInfo?.id" color="#ffc526" @click="roll">
+          Roll!
+        </n-button>
+      </n-card>
+    </template>
+    <d-r-player />
+  </d-r-page>
 </template>
 
 <style scoped lang="scss">
-/* Your style code here */
+.dr-game {
+  &__heading {
+    color: #ffc526;
+    margin: 0;
+    text-shadow: 2px 2px black;
+  }
+}
 </style>

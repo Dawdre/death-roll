@@ -1,3 +1,5 @@
+import type { ActionHistory } from "@/composables/useEventSource"
+
 const BASE_ENDPOINT_URL = "https://ashypls.com/data/apps/DR/Service/Service.asmx"
 
 const AUTH_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/userAuth`
@@ -19,6 +21,7 @@ export interface AuthenticatedUser {
   rollsWon: number
   rollsLost: number
   passesCount: number
+  avatar: string
 }
 
 export interface Lobby {
@@ -27,6 +30,7 @@ export interface Lobby {
   hostID: string
   players: Array<string>
   startGame: boolean
+  lobbyPot: number
 }
 
 export interface Game {
@@ -87,6 +91,6 @@ export async function fetchGameTurn<T>(data: T) {
   return await fetchPost(GAME_TURN_ENDPOINT_URL, data)
 }
 
-export async function updatedLobbyPot<T>(data: T) {
-  return await fetchPost(UPDATE_LOBBY_POT_ENDPOINT_URL, data)
+export async function updatedLobbyPot<T>(data: T): Promise<Lobby> {
+  return await fetchPost<Lobby>(UPDATE_LOBBY_POT_ENDPOINT_URL, data)
 }

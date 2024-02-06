@@ -34,7 +34,7 @@ interface EventSourceGame {
   winnerID: string
 }
 
-interface ActionHistory {
+export interface ActionHistory {
   playerID: string
   roll: number
   type: string
@@ -68,7 +68,7 @@ export function useEventSource(isGameData: boolean) {
     }
   }
   
-  function startStream(urlParams: StreamParams) {
+  async function startStream(urlParams: StreamParams) {
     const params = new URLSearchParams(urlParams as Record<string, string>);
     eventSource.value = new EventSource(`${isGameUrl(isGameData)}?${params.toString()}`);  
     

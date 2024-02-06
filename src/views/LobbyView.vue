@@ -1,43 +1,29 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue'
-import { fetchAuthenticatedUser, fetchGame, updatedLobbyPot } from '@/api/api'
+import { fetchGame, updatedLobbyPot } from '@/api/api'
 import { useAsyncState, useDebounceFn } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useEventSource } from '@/composables/useEventSource'
-import { NCard, NButton, NInputNumber, NFormItem, NNumberAnimation } from 'naive-ui'
+import { NCard, NButton, NInputNumber, NNumberAnimation, NH2 } from 'naive-ui'
+
+import DRPage from '@/components/DRPage.vue'
+import DRHeader from '@/components/DRHeader.vue'
+import DRPlayer from '@/components/DRPlayer.vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const tokenPot = ref(0)
 
-const authenticatedUserToken = localStorage.getItem('authenticatedUser')
 const authenticatedUserId = localStorage.getItem('authenticatedUserId')
-
-const authenticatedUser =
-  authenticatedUserToken && authenticatedUserId
-    ? {
-        ID: authenticatedUserId,
-        authID: authenticatedUserToken
-      }
-    : null
-
-const { state: userInfo } = useAsyncState(() => fetchAuthenticatedUser(authenticatedUser), null, {
-  throwError: true
-})
 
 const lobbyURLParams = {
   lobby: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id,
   user: authenticatedUserId ?? ''
 }
-const {
-  eventSourceData: lobbyStream,
-  startStream,
-  closeEventSource,
-  eventSourceError
-} = useEventSource(false)
+const { eventSourceData: lobbyStream, startStream, closeEventSource } = useEventSource(false)
 
-startStream(lobbyURLParams)
+await startStream(lobbyURLParams)
 
 const { state: game, execute: startGame } = useAsyncState(
   () =>
@@ -63,20 +49,14 @@ const { state: lobbyPot, execute: updatePot } = useAsyncState(
   }
 )
 
-const debounceUpdatePot = useDebounceFn(updatePot, 5000)
+const debounceUpdatePot = useDebounceFn(updatePot, 2000)
 async function handleUpdatePot(value: number) {
   tokenPot.value = value
   await debounceUpdatePot(tokenPot.value)
 }
 
 watchEffect(() => {
-  if (lobbyStream.value?.lobbyPot) {
-    // tokenPot.value = lobbyStream.value.lobbyPot
-  }
-
   if (lobbyStream.value?.startGame) {
-    console.log(lobbyStream.value, 'lobbyStream')
-
     closeEventSource()
 
     router.push({
@@ -93,59 +73,109 @@ async function start() {
 }
 </script>
 <template>
-  <div class="dr-lobby">
-    <h1>{{ lobbyStream?.name }} - {{ route.params.id }}</h1>
-    {{ eventSourceError }}
+  <d-r-page page-class="dr-lobby">
+    <d-r-header />
     <template v-if="lobbyStream">
-      <n-card title="Players">
+      <n-h2 class="dr-lobby__heading" style="font-size: 2rem">{{ lobbyStream.name }}</n-h2>
+      <n-card class="dr-lobby__card" content-class="dr-lobby__card-content">
+        <n-h2 class="dr-lobby__heading">
+          LOBBY POT
+          <div class="dr-lobby__pot">
+            <n-number-animation :from="0" :to="lobbyStream.lobbyPot" :show-separator="true" />
+          </div>
+        </n-h2>
+        <n-h2 class="dr-lobby__heading">PLAYERS</n-h2>
         <div class="dr-lobby__players">
           <div class="dr-lobby__player" v-for="player in lobbyStream.players" :key="player.id">
-            <img class="dr-lobby__player-img" :src="player.avatar" :alt="player.name" />
-            <div>{{ player.name }}</div>
-            <div>Tokens: {{ player.tokens }}</div>
+            <div class="dr-lobby__player-img">
+              <img :src="player.avatar" :alt="player.name" />
+            </div>
+            <div class="dr-lobby__player-avatar">
+              {{ player.name }}
+              <div class="dr-lobby__player-tokens">
+                <img src="/COIN (1).png" alt="gold" />{{ player.tokens }}
+              </div>
+            </div>
           </div>
         </div>
-      </n-card>
-      <n-button v-if="lobbyStream.hostID === authenticatedUserId" type="primary" @click="start">
-        Start Game
-      </n-button>
-      <n-form-item v-if="lobbyStream.hostID === authenticatedUserId" label="Pot">
+        <n-h2 class="dr-lobby__heading">POT</n-h2>
         <n-input-number
+          v-if="lobbyStream.hostID === authenticatedUserId"
           v-model:value="tokenPot"
           clearable
           :step="100"
           :min="0"
           @update:value="handleUpdatePot"
+          @clear="tokenPot = 0"
         />
-      </n-form-item>
-      {{ lobbyPot }}
-      <h2>
-        <n-number-animation :from="0" :to="tokenPot" :show-separator="true" />
-      </h2>
+      </n-card>
+      <n-button
+        v-if="lobbyStream.hostID === authenticatedUserId"
+        color="#ffc526"
+        type="primary"
+        @click="start"
+      >
+        Start Game
+      </n-button>
     </template>
-    <div>{{ userInfo?.name }} is logged in</div>
-  </div>
+    <d-r-player />
+  </d-r-page>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .dr-lobby {
-  display: grid;
-  gap: 1rem;
+  &__card {
+    background-color: rgb(14, 14, 17, 0.9);
+    margin-bottom: 1rem;
+
+    &-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+
+  &__pot {
+    font-size: 2rem;
+    color: #fff;
+  }
+
+  &__heading {
+    color: #ffc526;
+    margin: 0;
+    text-shadow: 2px 2px black;
+  }
 
   &__players {
     display: flex;
+
     gap: 1rem;
   }
 
   &__player {
     display: flex;
-    flex-direction: column;
+    align-items: flex-end;
     gap: 0.5rem;
 
+    &-tokens {
+      display: flex;
+      align-items: center;
+    }
+
+    &-avatar {
+      display: flex;
+      flex-direction: column;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
     &-img {
-      height: auto;
-      width: 80px;
-      border-radius: 50%;
+      img {
+        height: auto;
+        width: 40px;
+        border-radius: 50%;
+        aspect-ratio: 1 / 1;
+      }
     }
   }
 }
