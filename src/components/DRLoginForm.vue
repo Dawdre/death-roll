@@ -28,7 +28,7 @@ async function submit() {
 </script>
 <template>
   <main>
-    <n-form ref="formRef" :model="inputValue" :rules="formRules">
+    <n-form ref="formRef" :model="inputValue" :rules="formRules" class="dr-login-form">
       <n-form-item label="Username" path="username">
         <n-input v-model:value="inputValue.uname" placeholder="" />
       </n-form-item>
@@ -45,4 +45,8 @@ async function submit() {
     </n-form>
   </main>
 </template>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.dr-login-form {
+  margin-top: 1rem;
+}
+</style>
