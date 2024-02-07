@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useAsyncState } from '@vueuse/core'
 import { authUser, fetchAuthenticatedUser, type AuthenticatedUser, fetchLobby } from '@/api/api'
 import { useRouter } from 'vue-router'
 import { type FormValidationError, NH1, NH2, NAlert, NCard, NInput, NButton } from 'naive-ui'
+import { useUserStore } from '@/stores/userStore'
 
 import DRPage from '@/components/DRPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
@@ -11,15 +12,12 @@ import DRLoginForm from '@/components/DRLoginForm.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const isAuthenticated = ref(false)
 const lobbyName = ref('')
 const lobbyID = ref('')
 const formValue = ref({ uname: '', pwd: '' })
-const authenticatedUser = ref({
-  ID: localStorage.getItem('authenticatedUserId'),
-  authID: localStorage.getItem('authenticatedUser')
-})
 
 const {
   state: authenticatedUserResponse,
@@ -30,25 +28,17 @@ const {
   throwError: true
 })
 
-const { state: userInfo, execute: fetchUserInfo } = useAsyncState(
-  () => fetchAuthenticatedUser(authenticatedUser.value),
-  null,
-  {
-    throwError: true,
-    immediate: false
+watchEffect(() => {
+  if (userStore.isAuthenticated) {
+    isAuthenticated.value = true
   }
-)
-
-await fetchUserInfo()
-if (authenticatedUser.value.authID === userInfo.value?.auth) {
-  isAuthenticated.value = true
-}
+})
 
 const { state: lobbyInfo, execute: executeLobby } = useAsyncState(
   () =>
     fetchLobby({
       name: lobbyName.value,
-      hostID: authenticatedUser.value?.ID
+      hostID: userStore.getUserStorageCredentials.ID
     }),
   null,
   {
@@ -70,17 +60,9 @@ async function submitForm(validationErrors: FormValidationError) {
     isAuthenticated.value = false
   } finally {
     if (authenticatedUserResponse.value) {
-      localStorage.setItem('authenticatedUser', authenticatedUserResponse.value.auth)
-      localStorage.setItem('authenticatedUserId', authenticatedUserResponse.value.id)
+      userStore.setUserStorageCrendentials(authenticatedUserResponse.value)
 
       isAuthenticated.value = true
-
-      authenticatedUser.value = {
-        ID: localStorage.getItem('authenticatedUserId'),
-        authID: localStorage.getItem('authenticatedUser')
-      }
-
-      fetchUserInfo()
     }
   }
 }
@@ -90,6 +72,21 @@ async function startLobby() {
 
   router.push({ name: 'lobby', params: { id: lobbyInfo.value?.id } })
 }
+
+function joinLobby() {
+  router.push({ name: 'lobby', params: { id: lobbyID.value } })
+}
+
+// function logout() {
+//   localStorage.removeItem('authenticatedUser')
+//   localStorage.removeItem('authenticatedUserId')
+
+//   isAuthenticated.value = false
+//   authenticatedUser.value = {
+//     ID: null,
+//     authID: null
+//   }
+// }
 </script>
 
 <template>
@@ -104,19 +101,13 @@ async function startLobby() {
     <template v-else>
       <n-card class="dr-card" hoverable content-class="dr-home__card-content">
         <n-h2 class="dr-card__heading">CREATE A LOBBY</n-h2>
-        <n-input v-model:value="lobbyName" />
+        <n-input v-model:value="lobbyName" placeholder="LOBBY NAME" />
         <n-button color="#ffc526" type="primary" @click="startLobby">CREATE LOBBY</n-button>
       </n-card>
       <n-card class="dr-card" hoverable content-class="dr-home__card-content">
         <n-h2 class="dr-card__heading">JOIN A LOBBY</n-h2>
-        <n-input v-model:value="lobbyID" />
-        <n-button
-          color="#ffc526"
-          type="primary"
-          @click="router.push({ name: 'lobby', params: { id: lobbyID } })"
-        >
-          JOIN LOBBY
-        </n-button>
+        <n-input v-model:value="lobbyID" placeholder="LOBBY ID" />
+        <n-button color="#ffc526" type="primary" @click="joinLobby"> JOIN LOBBY </n-button>
       </n-card>
 
       <d-r-player />
@@ -133,8 +124,7 @@ async function startLobby() {
 
   &__heading {
     margin: 0;
-    font-size: 1.7rem;
-    text-shadow: 2px 2px black;
+    font-size: 2rem;
   }
 }
 

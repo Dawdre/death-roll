@@ -41,7 +41,7 @@ async function submit() {
         />
       </n-form-item>
 
-      <n-button type="primary" color="#ffc526" @click="submit">Submit</n-button>
+      <n-button type="primary" color="#ffc526" @click="submit">Sign In</n-button>
     </n-form>
   </main>
 </template>

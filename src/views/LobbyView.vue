@@ -5,6 +5,8 @@ import { useAsyncState, useDebounceFn } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useEventSource } from '@/composables/useEventSource'
 import { NCard, NButton, NInputNumber, NNumberAnimation, NH2 } from 'naive-ui'
+import { useCoinSize } from '@/composables/useCoinSize'
+import { useUserStore } from '@/stores/userStore'
 
 import DRPage from '@/components/DRPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
@@ -12,14 +14,13 @@ import DRPlayer from '@/components/DRPlayer.vue'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 
 const tokenPot = ref(0)
 
-const authenticatedUserId = localStorage.getItem('authenticatedUserId')
-
 const lobbyURLParams = {
   lobby: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id,
-  user: authenticatedUserId ?? ''
+  user: userStore.getUserStorageCredentials.ID ?? ''
 }
 const { eventSourceData: lobbyStream, startStream, closeEventSource } = useEventSource(false)
 
@@ -37,7 +38,7 @@ const { state: game, execute: startGame } = useAsyncState(
   }
 )
 
-const { state: lobbyPot, execute: updatePot } = useAsyncState(
+const { execute: updatePot } = useAsyncState(
   () =>
     updatedLobbyPot({
       lobbyID: lobbyURLParams.lobby,
@@ -48,6 +49,8 @@ const { state: lobbyPot, execute: updatePot } = useAsyncState(
     immediate: false
   }
 )
+
+const { getCoinSize } = useCoinSize(userStore.getUser!)
 
 const debounceUpdatePot = useDebounceFn(updatePot, 2000)
 async function handleUpdatePot(value: number) {
@@ -76,7 +79,7 @@ async function start() {
   <d-r-page page-class="dr-lobby">
     <d-r-header />
     <template v-if="lobbyStream">
-      <n-h2 class="dr-lobby__heading" style="font-size: 2rem">{{ lobbyStream.name }}</n-h2>
+      <n-h2 class="dr-lobby__title">{{ lobbyStream.name }}</n-h2>
       <n-card class="dr-lobby__card" content-class="dr-lobby__card-content">
         <n-h2 class="dr-lobby__heading">
           LOBBY POT
@@ -93,14 +96,16 @@ async function start() {
             <div class="dr-lobby__player-avatar">
               {{ player.name }}
               <div class="dr-lobby__player-tokens">
-                <img src="/COIN (1).png" alt="gold" />{{ player.tokens }}
+                <img v-if="getCoinSize" :src="`/${getCoinSize}.png`" alt="gold" />{{
+                  player.tokens
+                }}
               </div>
             </div>
           </div>
         </div>
         <n-h2 class="dr-lobby__heading">POT</n-h2>
         <n-input-number
-          v-if="lobbyStream.hostID === authenticatedUserId"
+          v-if="lobbyStream.hostID === userStore.getUserStorageCredentials.ID"
           v-model:value="tokenPot"
           clearable
           :step="100"
@@ -110,7 +115,7 @@ async function start() {
         />
       </n-card>
       <n-button
-        v-if="lobbyStream.hostID === authenticatedUserId"
+        v-if="lobbyStream.hostID === userStore.getUserStorageCredentials.ID"
         color="#ffc526"
         type="primary"
         @click="start"
@@ -123,7 +128,17 @@ async function start() {
 </template>
 
 <style lang="scss" scoped>
+%heading {
+  color: #ffc526;
+  margin: 0;
+}
+
 .dr-lobby {
+  &__title {
+    @extend %heading;
+    font-size: 2rem;
+  }
+
   &__card {
     background-color: rgb(14, 14, 17, 0.9);
     margin-bottom: 1rem;
@@ -141,14 +156,11 @@ async function start() {
   }
 
   &__heading {
-    color: #ffc526;
-    margin: 0;
-    text-shadow: 2px 2px black;
+    @extend %heading;
   }
 
   &__players {
     display: flex;
-
     gap: 1rem;
   }
 

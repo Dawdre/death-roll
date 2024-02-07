@@ -22,11 +22,9 @@ const themeOverrides: GlobalThemeOverrides = {
 
 <template>
   <Suspense>
-    <n-theme-editor>
-      <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
-        <RouterView />
-      </n-config-provider>
-    </n-theme-editor>
+    <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
+      <RouterView />
+    </n-config-provider>
   </Suspense>
 </template>
 

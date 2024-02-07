@@ -1,35 +1,28 @@
+<script setup lang="ts">
+import { useCoinSize } from '@/composables/useCoinSize'
+import { useUserStore } from '@/stores/userStore'
+import { NCard } from 'naive-ui'
+
+const userStore = useUserStore()
+
+const { getCoinSize } = useCoinSize(userStore.getUser!)
+</script>
+
 <template>
-  <n-card v-if="userInfo" class="dr-player-container" content-class="dr-player">
+  <n-card v-if="userStore.getUser" class="dr-player-container" content-class="dr-player">
     <div class="dr-player__avatar">
-      <img class="dr-player__avatar-img" :src="userInfo.avatar" :alt="userInfo.name" />
-      <div class="dr-player__avatar-name">{{ userInfo.name }}</div>
+      <img
+        class="dr-player__avatar-img"
+        :src="userStore.getUser.avatar"
+        :alt="userStore.getUser.name"
+      />
+      <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
     </div>
     <div class="dr-player__tokens">
-      <img src="/COIN (1).png" alt="gold" />{{ userInfo.tokenCount }}
+      <img :src="`/${getCoinSize}.png`" alt="gold" />{{ userStore.getUser.tokenCount }}
     </div>
   </n-card>
 </template>
-
-<script setup lang="ts">
-import { fetchAuthenticatedUser } from '@/api/api'
-import { useAsyncState } from '@vueuse/core'
-import { NCard } from 'naive-ui'
-
-const authenticatedUserToken = localStorage.getItem('authenticatedUser')
-const authenticatedUserId = localStorage.getItem('authenticatedUserId')
-
-const authenticatedUser =
-  authenticatedUserToken && authenticatedUserId
-    ? {
-        ID: authenticatedUserId,
-        authID: authenticatedUserToken
-      }
-    : null
-
-const { state: userInfo } = useAsyncState(() => fetchAuthenticatedUser(authenticatedUser), null, {
-  throwError: true
-})
-</script>
 
 <style lang="scss">
 .dr-player {
