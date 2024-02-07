@@ -1,41 +1,4 @@
 @font-face {
-  font-family: 'Friz Quadrata Std';
-  font-style: italic;
-  font-weight: normal;
-  src: local('Friz Quadrata Std Italic'), url('/fonts/friz-quadrata-std-italic-587033b2c95df.woff') format('woff');
-}
-
-
-@font-face {
-  font-family: 'Friz Quadrata Std';
-  font-style: normal;
-  font-weight: normal;
-  src: local('Friz Quadrata Std Medium'), url('/fonts/friz-quadrata-std-medium-5870338ec7ef8.woff') format('woff');
-}
-
-
-@font-face {
-  font-family: 'Friz Quadrata Std';
-  font-style: normal;
-  font-weight: bold;
-  src: local('Friz Quadrata Std Bold'), url('/fonts/friz-quadrata-std-bold-587034a220f9f.woff') format('woff');
-}
-
-
-@font-face {
-  font-family: 'Friz Quadrata Std';
-  font-style: italic;
-  font-weight: bold;
-  src: local('Friz Quadrata Std Bold Italic'), url('/fonts/friz-quadrata-std-bold-italic-587033d6d4298.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Vermin Vibes 1989';
-  font-style: normal;
-  src: local('Vermin Vibes 1989'), url('/fonts/Vermin Vibes 1989.woff') format('woff');
-}
-
-@font-face {
   font-family: 'Alagard';
   font-style: normal;
   src: local('Alagard'), url('/fonts/alagard.woff');

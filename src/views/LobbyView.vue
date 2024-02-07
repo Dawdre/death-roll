@@ -104,13 +104,14 @@ async function start() {
           </div>
         </div>
         <n-h2 class="dr-lobby__heading">POT</n-h2>
+        <!-- @ts-ignore -->
         <n-input-number
           v-if="lobbyStream.hostID === userStore.getUserStorageCredentials.ID"
           v-model:value="tokenPot"
           clearable
           :step="100"
           :min="0"
-          @update:value="handleUpdatePot"
+          @update:value="handleUpdatePot(tokenPot)"
           @clear="tokenPot = 0"
         />
       </n-card>
