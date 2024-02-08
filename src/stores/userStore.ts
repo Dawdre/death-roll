@@ -27,8 +27,13 @@ export const useUserStore = defineStore("user", () => {
   });
 
   async function fetchUser() {
+    if (user.value) {
+      return;
+    };
+
     await authenticateUser(0, getUserStorageCredentials.value)
     user.value = userInfo.value;
+    
   }
 
   if (getUserStorageCredentials.value.ID && getUserStorageCredentials.value.authID) {

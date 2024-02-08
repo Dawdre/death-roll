@@ -8,6 +8,7 @@ interface EventSourceLobby {
   players: Array<Player>
   startGame: boolean
   lobbyPot: number
+  gameID: string
 }
 
 interface Player {

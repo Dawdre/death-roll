@@ -62,10 +62,12 @@ watchEffect(() => {
   if (lobbyStream.value?.startGame) {
     closeEventSource()
 
+    console.log('Starting game...', lobbyStream.value?.gameID)
+
     router.push({
       name: 'game',
       params: {
-        id: game.value?.id
+        id: lobbyStream.value?.gameID
       }
     })
   }

@@ -31,6 +31,7 @@ const gameUrlParams = {
   user: userStore.getUserStorageCredentials.ID ?? '',
   game: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 }
+console.log(gameUrlParams)
 const { eventSourceGameData: gameStream, startStream } = useEventSource(true)
 
 startStream(gameUrlParams)
