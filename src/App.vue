@@ -31,4 +31,9 @@ const themeOverrides: GlobalThemeOverrides = {
   </Suspense>
 </template>
 
-<style scoped></style>
+<style>
+#app {
+  height: 100vh;
+  background-image: url('/DEATHROLL-PAGE-BG.png');
+}
+</style>

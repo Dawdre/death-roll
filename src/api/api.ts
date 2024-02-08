@@ -1,6 +1,6 @@
 import type { ActionHistory } from "@/composables/useEventSource"
 
-const BASE_ENDPOINT_URL = "https://ashypls.com/data/apps/DR/Service/Service.asmx"
+export const BASE_ENDPOINT_URL = "https://ashypls.com/data/apps/DR/Service/Service.asmx"
 
 const AUTH_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/userAuth`
 const USER_INFO_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/userInfo`
@@ -55,7 +55,7 @@ interface GameTurn {
   action: string
 }
 
-async function fetchPost<T>(url: string, data: unknown): Promise<T> {
+export async function fetchPost<T>(url: string, data?: unknown): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     headers: {

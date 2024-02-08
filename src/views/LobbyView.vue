@@ -166,6 +166,7 @@ async function start() {
     font-size: 2rem;
 
     cursor: pointer;
+    align-self: flex-start;
 
     &-caption {
       font-size: 1rem;

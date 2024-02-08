@@ -14,36 +14,42 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
 
 <template>
   <n-card v-if="userStore.getUser" class="dr-player-container" content-class="dr-player">
-    <div class="dr-player__avatar">
-      <n-upload
-        class="dr-player__upload"
-        file-list-class="dr-player__upload-list"
-        trigger-class="dr-player__upload-trigger"
-        :action="`https://ashypls.com/data/apps/DR/Service/userImageUploader/?playerID=${userStore.getUser.id}&playerAuth=${userStore.getUser.auth}`"
-        list-type="image-card"
-        :show-preview-button="false"
-        :max="1"
-      >
-        <img
-          ref="uploadElement"
-          class="dr-player__avatar-img"
-          :src="userStore.getUser.avatar"
-          :alt="userStore.getUser.name"
-        />
+    <div class="dr-player__profile">
+      <div class="dr-player__avatar">
+        <n-upload
+          class="dr-player__upload"
+          file-list-class="dr-player__upload-list"
+          trigger-class="dr-player__upload-trigger"
+          :action="`https://ashypls.com/data/apps/DR/Service/userImageUploader/?playerID=${userStore.getUser.id}&playerAuth=${userStore.getUser.auth}`"
+          list-type="image-card"
+          :show-preview-button="false"
+          :max="1"
+        >
+          <img
+            ref="uploadElement"
+            class="dr-player__avatar-img"
+            :src="userStore.getUser.avatar"
+            :alt="userStore.getUser.name"
+          />
 
-        <img
-          src="/camera-pixel-icon-ash.png"
-          :class="[
-            'dr-player__upload-trigger-img',
-            isHovered ? 'dr-player__upload-trigger-img--hover' : ''
-          ]"
-        />
-      </n-upload>
-      <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
+          <img
+            src="/camera-pixel-icon-ash.png"
+            :class="[
+              'dr-player__upload-trigger-img',
+              isHovered ? 'dr-player__upload-trigger-img--hover' : ''
+            ]"
+          />
+        </n-upload>
+        <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
+      </div>
+      <div class="dr-player__tokens">
+        <img :src="`/${getCoinSize}.png`" alt="gold" />{{ userStore.getUser.tokenCount }}
+      </div>
     </div>
+
     <div class="dr-player__info">
       <div class="dr-player__info-stats">
-        <n-h3 style="color: #ffc526">STATS</n-h3>
+        <n-h3 class="dr-player__info-stats-heading" style="color: #ffc526">STATS</n-h3>
         <dl class="dr-player__data">
           <dt class="dr-player__data-title">ROLLS WON</dt>
           <dd class="dr-player__data-value">{{ userStore.getUser.rollsWon }}</dd>
@@ -53,9 +59,6 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
           <dd class="dr-player__data-value">{{ userStore.getUser.rollsLost }}</dd>
         </dl>
       </div>
-      <div class="dr-player__tokens">
-        <img :src="`/${getCoinSize}.png`" alt="gold" />{{ userStore.getUser.tokenCount }}
-      </div>
     </div>
   </n-card>
 </template>
@@ -63,28 +66,46 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
 <style lang="scss">
 .dr-player {
   display: flex;
-  gap: 1rem;
-  font-size: 1.2rem;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
 
   &-container {
-    align-self: flex-end;
+    align-self: flex-start;
+    grid-column: 2;
+    grid-row: 2;
+
+    opacity: 0.9;
+    background-color: rgb(14, 14, 17, 0.9);
+
+    @media screen and (max-width: 840px) {
+      grid-column: 1;
+    }
   }
 
   &__tokens {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    font-size: 1.5rem;
+    margin-left: 1rem;
+  }
+
+  &__profile {
+    width: 100%;
   }
 
   &__info {
-    border: 1px solid #968045;
-    padding: 0.8rem;
-    border-radius: 3px;
-    flex: 1;
-
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding-left: 2rem;
+    border-left: 1px solid #ffc526;
+
+    &-stats-heading {
+      margin: 0;
+    }
   }
 
   &__data {
@@ -98,14 +119,12 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
 
   &__avatar {
     display: flex;
-    flex-direction: column;
+    gap: 0.8rem;
     align-items: center;
-    // border: 1px solid #968045;
-    // padding: 0.8rem;
-    // border-radius: 3px;
 
     &-name {
-      font-size: 1.2rem;
+      font-size: 1.5rem;
+      white-space: nowrap;
     }
 
     &-img {
@@ -119,6 +138,10 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
         filter: brightness(50%);
       }
     }
+  }
+
+  &__upload.n-upload {
+    width: fit-content;
   }
 
   &__upload {

@@ -12,6 +12,7 @@ import { NH1 } from 'naive-ui'
   align-self: center;
   justify-self: center;
   margin: 0;
+  grid-column: 1 / -1;
 
   &-img {
     height: auto;
