@@ -32,7 +32,15 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
           :alt="userStore.getUser.name"
         />
 
-        <svg
+        <img
+          src="/camera-pixel-icon.png"
+          :class="[
+            'dr-player__upload-trigger-img',
+            isHovered ? 'dr-player__upload-trigger-img--hover' : ''
+          ]"
+        />
+
+        <!-- <svg
           :class="[
             'dr-player__upload-trigger-img',
             isHovered ? 'dr-player__upload-trigger-img--hover' : ''
@@ -48,12 +56,25 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
             d="M20 5h-2.586l-2.707-2.707A.996.996 0 0 0 14 2h-4a.996.996 0 0 0-.707.293L6.586 5H4c-1.103 0-2 .897-2 2v11c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2zm-8 12c-2.71 0-5-2.29-5-5 0-2.711 2.29-5 5-5s5 2.289 5 5c0 2.71-2.29 5-5 5z"
           />
           <path d="M13 9h-2v2H9v2h2v2h2v-2h2v-2h-2z" />
-        </svg>
+        </svg> -->
       </n-upload>
       <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
     </div>
-    <div class="dr-player__tokens">
-      <img :src="`/${getCoinSize}.png`" alt="gold" />{{ userStore.getUser.tokenCount }}
+    <div class="dr-player__info">
+      <div class="dr-player__info-stats">
+        <n-h3 style="color: #ffc526">STATS</n-h3>
+        <dl class="dr-player__data">
+          <dt class="dr-player__data-title">ROLLS WON</dt>
+          <dd class="dr-player__data-value">{{ userStore.getUser.rollsWon }}</dd>
+        </dl>
+        <dl class="dr-player__data">
+          <dt class="dr-player__data-title">ROLLS LOST</dt>
+          <dd class="dr-player__data-value">{{ userStore.getUser.rollsLost }}</dd>
+        </dl>
+      </div>
+      <div class="dr-player__tokens">
+        <img :src="`/${getCoinSize}.png`" alt="gold" />{{ userStore.getUser.tokenCount }}
+      </div>
     </div>
   </n-card>
 </template>
@@ -62,7 +83,7 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
 .dr-player {
   display: flex;
   gap: 1rem;
-  align-items: flex-end;
+  font-size: 1.2rem;
 
   &-container {
     align-self: flex-end;
@@ -74,15 +95,37 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
     align-items: center;
   }
 
-  &__tokens,
-  &__avatar-name {
-    font-size: 1.5rem;
+  &__info {
+    border: 1px solid #968045;
+    padding: 0.8rem;
+    border-radius: 3px;
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  &__data {
+    display: flex;
+    gap: 0.3rem;
+
+    &-value {
+      color: #ffc526;
+    }
   }
 
   &__avatar {
     display: flex;
     flex-direction: column;
     align-items: center;
+    // border: 1px solid #968045;
+    // padding: 0.8rem;
+    // border-radius: 3px;
+
+    &-name {
+      font-size: 1.2rem;
+    }
 
     &-img {
       height: auto;
@@ -106,6 +149,7 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
       position: absolute;
       pointer-events: none;
       display: none;
+      opacity: 0.8;
 
       &--hover {
         display: block;
@@ -132,6 +176,7 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
       .n-upload-dragger {
         border-color: transparent;
         border-radius: 50%;
+        background-color: transparent;
 
         &:hover {
           border: 1px dashed #ffc526;
