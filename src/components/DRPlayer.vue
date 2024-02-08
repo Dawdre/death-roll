@@ -23,7 +23,6 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
         list-type="image-card"
         :show-preview-button="false"
         :max="1"
-        @finish="console.log('finished')"
       >
         <img
           ref="uploadElement"

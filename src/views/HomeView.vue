@@ -49,7 +49,6 @@ const { state: lobbyInfo, execute: executeLobby } = useAsyncState(
 
 async function submitForm(validationErrors: FormValidationError) {
   if (validationErrors) {
-    console.log(validationErrors, 'errors')
     return
   }
 

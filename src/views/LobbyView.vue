@@ -4,7 +4,7 @@ import { fetchGame, updatedLobbyPot } from '@/api/api'
 import { useAsyncState, useDebounceFn, useClipboard } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useEventSource } from '@/composables/useEventSource'
-import { NCard, NButton, NInputNumber, NNumberAnimation, NH2, useMessage } from 'naive-ui'
+import { NCard, NButton, NInputNumber, NNumberAnimation, NH2, useMessage, NResult } from 'naive-ui'
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 
@@ -65,16 +65,8 @@ async function handleUpdatePot(value: number) {
 }
 
 watchEffect(() => {
-  if (eventSourceError.value) {
-    router.push({
-      name: 'home'
-    })
-  }
-
   if (lobbyStream.value?.startGame) {
     closeEventSource()
-
-    console.log('Starting game...', lobbyStream.value?.gameID)
 
     router.push({
       name: 'game',
@@ -95,7 +87,7 @@ async function start() {
 }
 </script>
 <template>
-  <d-r-page page-class="dr-lobby">
+  <d-r-page page-class="dr-lobby" :in-error="!!eventSourceError">
     <d-r-header />
     <template v-if="lobbyStream">
       <n-h2 class="dr-lobby__title" @click="copyLobbyID(route.params.id as string)">
@@ -151,6 +143,13 @@ async function start() {
         Start Game
       </n-button>
     </template>
+    <n-result v-if="eventSourceError" status="error" :title="eventSourceError">
+      <template #footer>
+        <n-button color="#ffc526" type="primary" @click="router.push({ name: 'home' })">
+          BACK TO HOME
+        </n-button>
+      </template>
+    </n-result>
     <d-r-player />
   </d-r-page>
 </template>

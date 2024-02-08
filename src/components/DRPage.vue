@@ -1,11 +1,11 @@
 <template>
-  <div :class="['dr-page', pageClass]">
+  <div :class="['dr-page', pageClass, inError ? 'dr-page--error' : '']">
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ pageClass: string }>()
+defineProps<{ pageClass: string; inError?: boolean }>()
 </script>
 
 <style lang="scss" scoped>
@@ -18,5 +18,9 @@ defineProps<{ pageClass: string }>()
   background-image: url('/DEATHROLL-PAGE-BG.png');
 
   padding: 2rem;
+
+  &--error {
+    grid-template-rows: 200px min-content 1fr;
+  }
 }
 </style>
