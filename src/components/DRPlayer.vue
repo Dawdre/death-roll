@@ -2,7 +2,7 @@
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 import { useElementHover } from '@vueuse/core'
-import { NCard, NUpload } from 'naive-ui'
+import { NCard, NUpload, NH3 } from 'naive-ui'
 import { ref } from 'vue'
 
 const userStore = useUserStore()

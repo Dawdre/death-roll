@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue'
 import { fetchGame, updatedLobbyPot } from '@/api/api'
-import { useAsyncState, useDebounceFn } from '@vueuse/core'
+import { useAsyncState, useDebounceFn, useClipboard } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useEventSource } from '@/composables/useEventSource'
-import { NCard, NButton, NInputNumber, NNumberAnimation, NH2 } from 'naive-ui'
+import { NCard, NButton, NInputNumber, NNumberAnimation, NH2, useMessage } from 'naive-ui'
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 
@@ -15,14 +15,20 @@ import DRPlayer from '@/components/DRPlayer.vue'
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-
+const message = useMessage()
 const tokenPot = ref(0)
+const { copy } = useClipboard({ source: route.params.id[0] })
 
 const lobbyURLParams = {
   lobby: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id,
   user: userStore.getUserStorageCredentials.ID ?? ''
 }
-const { eventSourceData: lobbyStream, startStream, closeEventSource } = useEventSource(false)
+const {
+  eventSourceData: lobbyStream,
+  startStream,
+  closeEventSource,
+  eventSourceError
+} = useEventSource(false)
 
 await startStream(lobbyURLParams)
 
@@ -59,6 +65,12 @@ async function handleUpdatePot(value: number) {
 }
 
 watchEffect(() => {
+  if (eventSourceError.value) {
+    router.push({
+      name: 'home'
+    })
+  }
+
   if (lobbyStream.value?.startGame) {
     closeEventSource()
 
@@ -73,6 +85,11 @@ watchEffect(() => {
   }
 })
 
+function copyLobbyID(id: string) {
+  copy(id)
+  message.success('Lobby ID copied')
+}
+
 async function start() {
   await startGame()
 }
@@ -81,7 +98,16 @@ async function start() {
   <d-r-page page-class="dr-lobby">
     <d-r-header />
     <template v-if="lobbyStream">
-      <n-h2 class="dr-lobby__title">{{ lobbyStream.name }}</n-h2>
+      <n-h2 class="dr-lobby__title" @click="copyLobbyID(route.params.id as string)">
+        {{ lobbyStream.name }}
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <path
+            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+            fill="currentColor"
+          ></path>
+        </svg>
+        <div class="dr-lobby__title-caption">{{ route.params.id }}</div>
+      </n-h2>
       <n-card class="dr-lobby__card" content-class="dr-lobby__card-content">
         <n-h2 class="dr-lobby__heading">
           LOBBY POT
@@ -106,7 +132,6 @@ async function start() {
           </div>
         </div>
         <n-h2 class="dr-lobby__heading">POT</n-h2>
-        <!-- @ts-ignore -->
         <n-input-number
           v-if="lobbyStream.hostID === userStore.getUserStorageCredentials.ID"
           v-model:value="tokenPot"
@@ -140,6 +165,15 @@ async function start() {
   &__title {
     @extend %heading;
     font-size: 2rem;
+
+    cursor: pointer;
+
+    &-caption {
+      font-size: 1rem;
+      color: #fff;
+      cursor: text;
+      margin: -0.5rem 0 1rem 0;
+    }
   }
 
   &__card {

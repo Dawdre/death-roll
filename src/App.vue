@@ -5,7 +5,8 @@ import {
   type GlobalThemeOverrides,
   darkTheme,
   NConfigProvider,
-  NThemeEditor
+  NThemeEditor,
+  NMessageProvider
 } from 'naive-ui'
 import { ref } from 'vue'
 
@@ -23,7 +24,9 @@ const themeOverrides: GlobalThemeOverrides = {
 <template>
   <Suspense>
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
-      <RouterView />
+      <n-message-provider>
+        <RouterView />
+      </n-message-provider>
     </n-config-provider>
   </Suspense>
 </template>

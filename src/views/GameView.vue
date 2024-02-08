@@ -63,6 +63,8 @@ async function roll() {
       authID: userStore.getUser?.auth,
       action: 'roll'
     })
+
+    myRoll.value = ''
   } else {
     console.log('Invalid roll command')
   }
