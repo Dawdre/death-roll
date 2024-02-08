@@ -33,30 +33,12 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
         />
 
         <img
-          src="/camera-pixel-icon.png"
+          src="/camera-pixel-icon-ash.png"
           :class="[
             'dr-player__upload-trigger-img',
             isHovered ? 'dr-player__upload-trigger-img--hover' : ''
           ]"
         />
-
-        <!-- <svg
-          :class="[
-            'dr-player__upload-trigger-img',
-            isHovered ? 'dr-player__upload-trigger-img--hover' : ''
-          ]"
-          fill="#ffc526"
-          width="40px"
-          height="40px"
-          opacity="0.8"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M20 5h-2.586l-2.707-2.707A.996.996 0 0 0 14 2h-4a.996.996 0 0 0-.707.293L6.586 5H4c-1.103 0-2 .897-2 2v11c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2zm-8 12c-2.71 0-5-2.29-5-5 0-2.711 2.29-5 5-5s5 2.289 5 5c0 2.71-2.29 5-5 5z"
-          />
-          <path d="M13 9h-2v2H9v2h2v2h2v-2h2v-2h-2z" />
-        </svg> -->
       </n-upload>
       <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
     </div>
