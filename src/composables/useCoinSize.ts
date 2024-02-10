@@ -1,5 +1,6 @@
 import type { AuthenticatedUser } from "@/api/api";
 import { computed, ref } from "vue";
+import type { Player } from "./useEventSource";
 
 enum CoinSize {
   RICH = "COIN_RICH",
@@ -7,26 +8,24 @@ enum CoinSize {
   POOR = "COIN_SMOL",
 }
 
-export function useCoinSize(userInfo: AuthenticatedUser) {
-  const coinSize = ref(0);
+function isPlayer(user: AuthenticatedUser | Player): user is Player {
+  return (user as Player).tokens !== undefined;
+}
 
-  if (!userInfo) {
-    return { coinSize, getCoinSize: CoinSize.POOR };
-  }
-  
-  const getCoinSize = computed(() => {
-    coinSize.value = userInfo.tokenCount;
-
-    if (coinSize.value > 0 && coinSize.value <= 1000) {
+export function useCoinSize() {
+  const getCoinSize = (player: AuthenticatedUser | Player) => computed(() => {
+    const coin = isPlayer(player) ? player.tokens : player.tokenCount;
+    
+    if (coin > 0 && coin <= 1000) {
       return CoinSize.POOR;
-    } else if (coinSize.value > 1000 && coinSize.value <= 10000) {
+    } else if (coin > 1000 && coin <= 10000) {
       return CoinSize.MIDDLE_CLASS;
-    } else if (coinSize.value > 10000) {
+    } else if (coin > 10000) {
       return CoinSize.RICH;
+    } else {
+      return CoinSize.POOR;
     }
-
-    return CoinSize.POOR;
   });
 
-  return { coinSize, getCoinSize };
+  return { getCoinSize };
 }

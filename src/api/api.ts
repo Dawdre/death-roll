@@ -1,18 +1,19 @@
 import type { ActionHistory } from "@/composables/useEventSource"
 
 export const BASE_ENDPOINT_URL = "https://ashypls.com/data/apps/DR/Service/Service.asmx"
+export const BASE_AZURE_ENDPOINT_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR/Service/Service.asmx"
 
-const AUTH_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/userAuth`
-const USER_INFO_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/userInfo`
-const CREATE_LOBBY_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/createLobby`
-const CREATE_GAME_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/createGame`
-const UPDATE_LOBBY_POT_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/updateLobbyPotInfo`
-const GAME_TURN_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/gameTurn`
+const AUTH_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/userAuth`
+const USER_INFO_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/userInfo`
+const CREATE_LOBBY_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/createLobby`
+const CREATE_GAME_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/createGame`
+const UPDATE_LOBBY_POT_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/updateLobbyPotInfo`
+const GAME_TURN_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/gameTurn`
 
-export const LOBBY_STREAM_URL = "https://ashypls.com/data/apps/DR/Lobby"
-export const GAME_STREAM_URL = "https://ashypls.com/data/apps/DR/Game"
+export const LOBBY_STREAM_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR/Lobby"
+export const GAME_STREAM_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR/Game"
 
-export interface AuthenticatedUser {
+export interface AuthenticatedUser {7
   id: string
   name: string
   pwd: string

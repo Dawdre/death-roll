@@ -17,7 +17,7 @@ import {
 } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
 
-import DRPage from '@/components/DRPage.vue'
+import DRPage from '@/components/page/DRPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
 

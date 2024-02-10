@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import { type FormValidationError, NH1, NH2, NAlert, NCard, NInput, NButton } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
 
-import DRPage from '@/components/DRPage.vue'
+import DRPage from '@/components/page/DRPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
 import DRLoginForm from '@/components/DRLoginForm.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
@@ -99,14 +99,6 @@ function joinLobby() {
       <d-r-login-form v-model="formValue" @submit-form="submitForm" />
     </template>
     <template v-else>
-      <div class="dr-home__content">
-        <n-h2 class="dr-home__heading">GAME RULES</n-h2>
-        <p class="dr-home__body">
-          Welcome to Deathrollers, the ultimate test of luck and nerves! Players take turns rolling
-          a die, aiming to roll high without hitting the dreaded 1. Wager your credits and outsmart
-          your opponents, in this high-stakes gamble where fortunes are won and lost with each roll!
-        </p>
-      </div>
       <n-card class="dr-card dr-home__create" hoverable content-class="dr-home__card-content">
         <n-h2 class="dr-card__heading">CREATE A LOBBY</n-h2>
         <n-input v-model:value="lobbyName" placeholder="LOBBY NAME" />
@@ -117,9 +109,19 @@ function joinLobby() {
         <n-input v-model:value="lobbyID" placeholder="LOBBY ID" />
         <n-button color="#ffc526" type="primary" @click="joinLobby"> JOIN LOBBY </n-button>
       </n-card>
+      <div class="dr-home__content">
+        <n-h2 class="dr-home__heading">GAME RULES</n-h2>
+        <p class="dr-home__body">
+          Welcome to Deathrollers, the ultimate test of luck and nerves! Players take turns rolling
+          a die, aiming to roll high without hitting the dreaded 1. Wager your credits and outsmart
+          your opponents, in this high-stakes gamble where fortunes are won and lost with each roll!
+        </p>
+      </div>
 
-      <d-r-player />
       <d-r-latest />
+    </template>
+    <template #footer>
+      <d-r-player />
     </template>
   </d-r-page>
 </template>
@@ -158,11 +160,17 @@ function joinLobby() {
 
   &__content {
     padding: 0 1.5rem;
+    grid-column: 2;
+    grid-row: 2;
+
+    @media screen and (max-width: 840px) {
+      grid-column: 1;
+    }
   }
 
   &__body {
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   &__create {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { fetchGame, updatedLobbyPot } from '@/api/api'
 import { useAsyncState, useDebounceFn, useClipboard } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
@@ -8,7 +8,7 @@ import { NCard, NButton, NInputNumber, NNumberAnimation, NH2, useMessage, NResul
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 
-import DRPage from '@/components/DRPage.vue'
+import DRLobbyPage from '@/components/page/DRLobbyPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
 
@@ -56,13 +56,19 @@ const { execute: updatePot } = useAsyncState(
   }
 )
 
-const { getCoinSize } = useCoinSize(userStore.getUser!)
-
-const debounceUpdatePot = useDebounceFn(updatePot, 2000)
+const debounceUpdatePot = useDebounceFn(updatePot, 1000, { maxWait: 4000 })
 async function handleUpdatePot(value: number) {
   tokenPot.value = value
   await debounceUpdatePot(tokenPot.value)
 }
+
+const getUpdatedTokenCount = computed(
+  () =>
+    lobbyStream.value?.players.find((p) => p.id === userStore.getUserStorageCredentials.ID)?.tokens
+)
+const isHost = computed(() => lobbyStream.value?.hostID === userStore.getUserStorageCredentials.ID)
+
+const { getCoinSize } = useCoinSize()
 
 watchEffect(() => {
   if (lobbyStream.value?.startGame) {
@@ -87,10 +93,11 @@ async function start() {
 }
 </script>
 <template>
-  <d-r-page page-class="dr-lobby" :in-error="!!eventSourceError">
+  <d-r-lobby-page page-class="dr-lobby" :in-error="!!eventSourceError">
     <d-r-header />
     <template v-if="lobbyStream">
       <n-h2 class="dr-lobby__title" @click="copyLobbyID(route.params.id as string)">
+        <img class="dr-lobby__title-img" src="/dice.png" alt="header-img" />
         {{ lobbyStream.name }}
         <svg width="24" height="24" viewBox="0 0 24 24">
           <path
@@ -100,48 +107,59 @@ async function start() {
         </svg>
         <div class="dr-lobby__title-caption">{{ route.params.id }}</div>
       </n-h2>
-      <n-card class="dr-lobby__card" content-class="dr-lobby__card-content">
-        <n-h2 class="dr-lobby__heading">
-          LOBBY POT
-          <div class="dr-lobby__pot">
-            <n-number-animation :from="0" :to="lobbyStream.lobbyPot" :show-separator="true" />
-          </div>
-        </n-h2>
+      <div class="dr-lobby__pot-container">
+        <n-card class="dr-lobby__card dr-lobby__card--pot" content-class="dr-lobby__card-content">
+          <n-h2 class="dr-lobby__heading">
+            LOBBY POT
+            <div class="dr-lobby__pot">
+              <img :src="`/COIN_RICH.png`" alt="gold" />
+              <n-number-animation :from="0" :to="lobbyStream.lobbyPot" :show-separator="true" />
+            </div>
+          </n-h2>
+          <n-h2 class="dr-lobby__heading">POT</n-h2>
+          <n-input-number
+            v-if="isHost"
+            v-model:value="tokenPot"
+            clearable
+            :step="500"
+            :min="0"
+            @update:value="handleUpdatePot(tokenPot)"
+            @clear="tokenPot = 0"
+          />
+        </n-card>
+        <n-button
+          v-if="isHost"
+          class="dr-lobby__start"
+          color="#ffc526"
+          type="primary"
+          @click="start"
+        >
+          Start Game
+        </n-button>
+      </div>
+      <n-card class="dr-lobby__card dr-lobby__card--players" content-class="dr-lobby__card-content">
         <n-h2 class="dr-lobby__heading">PLAYERS</n-h2>
         <div class="dr-lobby__players">
-          <div class="dr-lobby__player" v-for="player in lobbyStream.players" :key="player.id">
+          <div
+            :class="['dr-lobby__player', isHost ? 'dr-lobby__player--host' : '']"
+            v-for="player in lobbyStream.players"
+            :key="player.id"
+          >
             <div class="dr-lobby__player-img">
               <img :src="player.avatar" :alt="player.name" />
             </div>
             <div class="dr-lobby__player-avatar">
               {{ player.name }}
               <div class="dr-lobby__player-tokens">
-                <img v-if="getCoinSize" :src="`/${getCoinSize}.png`" alt="gold" />{{
-                  player.tokens
-                }}
+                <img
+                  :src="`/${getCoinSize(player ?? userStore.getUser!).value}.png`"
+                  alt="gold"
+                />{{ player.tokens }}
               </div>
             </div>
           </div>
         </div>
-        <n-h2 class="dr-lobby__heading">POT</n-h2>
-        <n-input-number
-          v-if="lobbyStream.hostID === userStore.getUserStorageCredentials.ID"
-          v-model:value="tokenPot"
-          clearable
-          :step="100"
-          :min="0"
-          @update:value="handleUpdatePot(tokenPot)"
-          @clear="tokenPot = 0"
-        />
       </n-card>
-      <n-button
-        v-if="lobbyStream.hostID === userStore.getUserStorageCredentials.ID"
-        color="#ffc526"
-        type="primary"
-        @click="start"
-      >
-        Start Game
-      </n-button>
     </template>
     <n-result v-if="eventSourceError" status="error" :title="eventSourceError">
       <template #footer>
@@ -150,8 +168,10 @@ async function start() {
         </n-button>
       </template>
     </n-result>
-    <d-r-player />
-  </d-r-page>
+    <template #footer>
+      <d-r-player :lobby-token-count="getUpdatedTokenCount" />
+    </template>
+  </d-r-lobby-page>
 </template>
 
 <style lang="scss" scoped>
@@ -163,17 +183,23 @@ async function start() {
 .dr-lobby {
   &__title {
     @extend %heading;
-    font-size: 2rem;
+    font-size: 2.3rem;
 
     cursor: pointer;
-    align-self: flex-start;
+    justify-self: center;
+    grid-row: 2;
+    grid-column: 1 / -1;
 
     &-caption {
-      font-size: 1rem;
+      font-size: 1.5rem;
       color: #fff;
       cursor: text;
       margin: -0.5rem 0 1rem 0;
     }
+  }
+
+  &__start {
+    width: 100%;
   }
 
   &__card {
@@ -185,11 +211,23 @@ async function start() {
       flex-direction: column;
       gap: 0.5rem;
     }
+
+    &--pot {
+      grid-column: 1;
+    }
+
+    &--players {
+      grid-column: 2;
+    }
   }
 
   &__pot {
     font-size: 2rem;
     color: #fff;
+
+    img {
+      margin-right: 0.5rem;
+    }
   }
 
   &__heading {
@@ -199,12 +237,44 @@ async function start() {
   &__players {
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
   }
 
   &__player {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
     gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(7, 7, 8, 0.9);
+    border-radius: 8px;
+    position: relative;
+
+    @media screen and (max-width: 840px) {
+      padding: 0.2rem 0.5rem;
+      gap: 0.1rem;
+    }
+
+    &-img {
+      display: flex;
+      justify-content: center;
+    }
+
+    &--host {
+      border: 1px solid #ffc526;
+
+      &:before {
+        content: ' ';
+        width: 30px;
+        background-image: url('/crown.png');
+        height: 30px;
+        background-repeat: no-repeat;
+        position: absolute;
+        z-index: 9999;
+        top: -13px;
+        right: -12px;
+        transform: rotate(23deg);
+      }
+    }
 
     &-tokens {
       display: flex;
@@ -214,8 +284,9 @@ async function start() {
     &-avatar {
       display: flex;
       flex-direction: column;
-      align-items: baseline;
-      gap: 0.5rem;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 1.2rem;
     }
 
     &-img {

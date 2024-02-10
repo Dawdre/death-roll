@@ -17,7 +17,18 @@ const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
           <th>WINNER</th>
         </tr>
         <tr v-for="match in recentMatches" :key="match.gameID">
-          <td>{{ match.gameDate }}</td>
+          <td>
+            {{
+              new Intl.DateTimeFormat('en-GB', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric'
+              }).format(new Date(match.gameDate))
+            }}
+          </td>
           <td>{{ match.tokenPot }}</td>
           <td>{{ match.winner }}</td>
         </tr>
@@ -28,8 +39,8 @@ const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
 
 <style lang="scss" scoped>
 .dr-latest {
-  grid-row: 3/5;
-  grid-column: 2;
+  // grid-row: 3/5;
+  // grid-column: 2;
 
   @media screen and (max-width: 840px) {
     grid-column: 1;
@@ -53,14 +64,14 @@ const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
 
     th {
       color: #ffc526;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       text-align: left;
       font-weight: normal;
     }
 
     td {
       color: #fff;
-      font-size: 1.5rem;
+      // font-size: 1.2rem;
       padding: 0.5rem 0;
       border-bottom: 1px solid #ffc526;
     }

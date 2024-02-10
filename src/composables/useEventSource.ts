@@ -11,7 +11,7 @@ interface EventSourceLobby {
   gameID: string
 }
 
-interface Player {
+export interface Player {
   id: string
   name: string
   tokens: number

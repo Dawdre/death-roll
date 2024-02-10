@@ -5,11 +5,13 @@ import { useElementHover } from '@vueuse/core'
 import { NCard, NUpload, NH3 } from 'naive-ui'
 import { ref } from 'vue'
 
+defineProps<{ lobbyTokenCount?: number }>()
+
 const userStore = useUserStore()
 const uploadElement = ref()
 const isHovered = useElementHover(uploadElement)
 
-const { getCoinSize } = useCoinSize(userStore.getUser!)
+const { getCoinSize } = useCoinSize()
 </script>
 
 <template>
@@ -42,9 +44,11 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
         </n-upload>
         <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
       </div>
-      <div class="dr-player__tokens">
-        <img :src="`/${getCoinSize}.png`" alt="gold" />{{ userStore.getUser.tokenCount }}
-      </div>
+    </div>
+    <div class="dr-player__tokens">
+      <img :src="`/${getCoinSize(userStore.getUser!).value}.png`" alt="gold" />{{
+        lobbyTokenCount ? lobbyTokenCount : userStore.getUser.tokenCount
+      }}
     </div>
 
     <div class="dr-player__info">
@@ -67,14 +71,12 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
 .dr-player {
   display: flex;
   gap: 0.5rem;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 
   &-container {
-    align-self: flex-start;
-    grid-column: 2;
-    grid-row: 2;
-
+    align-self: flex-end;
+    grid-column: 1/-1;
     opacity: 0.9;
     background-color: rgb(14, 14, 17, 0.9);
 
@@ -85,23 +87,25 @@ const { getCoinSize } = useCoinSize(userStore.getUser!)
 
   &__tokens {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
+    gap: 0.5rem;
     font-size: 1.5rem;
-    margin-left: 1rem;
+    padding: 0 2rem;
+    height: 60px;
+    border-left: 1px solid #7e7356;
+    border-right: 1px solid #7e7356;
+    white-space: nowrap;
   }
 
   &__profile {
-    width: 100%;
+    padding-right: 1rem;
   }
 
   &__info {
-    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding-left: 2rem;
-    border-left: 1px solid #ffc526;
+    padding-left: 1rem;
 
     &-stats-heading {
       margin: 0;

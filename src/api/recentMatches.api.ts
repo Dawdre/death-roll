@@ -1,6 +1,6 @@
-import { BASE_ENDPOINT_URL, fetchPost } from "./api";
+import { BASE_AZURE_ENDPOINT_URL, fetchPost } from "./api";
 
-const LATEST_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/recentMatches`;
+const LATEST_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/recentMatches`;
 
 interface RecentMatches {
   gameID: string
