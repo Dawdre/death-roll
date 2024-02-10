@@ -101,12 +101,12 @@ function joinLobby() {
     <template v-else>
       <n-card class="dr-card dr-home__create" hoverable content-class="dr-home__card-content">
         <n-h2 class="dr-card__heading">CREATE A LOBBY</n-h2>
-        <n-input v-model:value="lobbyName" placeholder="LOBBY NAME" />
+        <n-input v-model:value="lobbyName" placeholder="LOBBY NAME" @keyup.enter="startLobby" />
         <n-button color="#ffc526" type="primary" @click="startLobby">CREATE LOBBY</n-button>
       </n-card>
       <n-card class="dr-card dr-home__join" hoverable content-class="dr-home__card-content">
         <n-h2 class="dr-card__heading">JOIN A LOBBY</n-h2>
-        <n-input v-model:value="lobbyID" placeholder="LOBBY ID" />
+        <n-input v-model:value="lobbyID" placeholder="LOBBY ID" @keyup.enter="joinLobby" />
         <n-button color="#ffc526" type="primary" @click="joinLobby"> JOIN LOBBY </n-button>
       </n-card>
       <div class="dr-home__content">

@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { fetchRecentMatches } from '@/api/recentMatches.api'
+import { fetchRecentMatches, type RecentMatches } from '@/api/recentMatches.api'
 import { useAsyncState } from '@vueuse/core'
 import { NCard, NH2 } from 'naive-ui'
 
 const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
+const getAvatar = (match: RecentMatches) => {
+  return match.players.find((player) => player.name === match.winner)?.avatar
+}
 </script>
 
 <template>
@@ -30,7 +33,7 @@ const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
             }}
           </td>
           <td>{{ match.tokenPot }}</td>
-          <td>{{ match.winner }}</td>
+          <td><img :src="getAvatar(match)" :alt="match.winner" /> {{ match.winner }}</td>
         </tr>
       </table>
     </n-card>
@@ -39,9 +42,6 @@ const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
 
 <style lang="scss" scoped>
 .dr-latest {
-  // grid-row: 3/5;
-  // grid-column: 2;
-
   @media screen and (max-width: 840px) {
     grid-column: 1;
     grid-row: auto;

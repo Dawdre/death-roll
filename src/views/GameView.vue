@@ -3,7 +3,7 @@ import { fetchGameTurn } from '@/api/api'
 import { useEventSource } from '@/composables/useEventSource'
 import { useAsyncState } from '@vueuse/core'
 import { computed, ref, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   NCard,
   NButton,
@@ -13,15 +13,17 @@ import {
   NNumberAnimation,
   NTimeline,
   NTimelineItem,
-  NScrollbar
+  NScrollbar,
+  NResult
 } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
 
-import DRPage from '@/components/page/DRPage.vue'
+import DRGamePage from '@/components/page/DRGamePage.vue'
 import DRHeader from '@/components/DRHeader.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 
 const myRoll = ref('')
@@ -31,17 +33,17 @@ const gameUrlParams = {
   user: userStore.getUserStorageCredentials.ID ?? '',
   game: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 }
-const { eventSourceGameData: gameStream, startStream } = useEventSource(true)
+const { eventSourceGameData: gameStream, startStream, eventSourceError } = useEventSource(true)
 
 startStream(gameUrlParams)
 
-const { execute: takeTurn } = useAsyncState(fetchGameTurn, null, {
+const { execute: takeTurn, isLoading } = useAsyncState(fetchGameTurn, null, {
   throwError: true,
   immediate: false
 })
 
-const getPlayerName = (id: string) =>
-  computed(() => gameStream.value?.gameLobby.players.find((player) => player.id === id)?.name)
+const getPlayer = (id: string) =>
+  computed(() => gameStream.value?.gameLobby.players.find((player) => player.id === id))
 
 watchEffect(() => {
   if (timeline.value) {
@@ -53,7 +55,7 @@ watchEffect(() => {
 })
 
 async function roll() {
-  if (myRoll.value.startsWith(`/roll ${gameStream.value?.currentRoll}`)) {
+  if (myRoll.value.trim()) {
     console.log('Rolling...', gameStream.value?.id)
 
     await takeTurn(0, {
@@ -71,33 +73,62 @@ async function roll() {
 </script>
 
 <template>
-  <d-r-page page-class="dr-game">
+  <d-r-game-page page-class="dr-game">
     <d-r-header />
     <template v-if="gameStream">
       <n-h2 class="dr-game__title">
         {{ gameStream.gameLobby.name }}
       </n-h2>
 
-      <n-card>
+      <n-card class="dr-game__card">
         <div class="dr-game__content">
           <n-h2 class="dr-game__heading">
             <template v-if="gameStream.winnerID">
-              {{ getPlayerName(gameStream.winnerID).value }} WINS!
+              {{ getPlayer(gameStream.winnerID).value?.name }} WINS!
             </template>
-            <template v-else-if="gameStream.playerTurn === userStore.getUser?.id">
+            <template
+              v-else-if="
+                gameStream.playerTurn === userStore.getUser?.id &&
+                !getPlayer(gameStream.playerTurn).value?.isOut
+              "
+            >
               IT'S YOUR TURN!
             </template>
+            <template v-else-if="getPlayer(gameStream.playerTurn).value?.isOut">
+              YOU ROLLED A 1 AND ARE OUT!
+            </template>
             <template v-else>
-              {{ getPlayerName(gameStream.playerTurn).value?.toUpperCase() }}'S TURN!
+              {{ getPlayer(gameStream.playerTurn).value?.name.toUpperCase() }}'S TURN!
             </template>
           </n-h2>
 
           <div class="dr-game__view">
             <div class="dr-game__board">
-              <n-h3 v-if="!gameStream.winnerID" class="dr-game__sub-heading">
-                The current roll is
-                <n-number-animation :from="0" :to="gameStream.currentRoll" :show-separator="true" />
+              <n-h3 v-if="!gameStream.winnerID && !isLoading" class="dr-game__sub-heading">
+                <div style="color: #ffc526">Round {{ gameStream.gameRound }}</div>
+                Current Roll
+                <div class="dr-game__board-current-roll">
+                  <n-number-animation
+                    :from="0"
+                    :to="gameStream.currentRoll"
+                    :show-separator="true"
+                  />
+                </div>
               </n-h3>
+              <div v-else-if="isLoading" class="dr-game__loading">
+                <div class="dr-game__loading-dice">
+                  <img
+                    src="/dice.png"
+                    alt="dice"
+                    class="dr-game__loading-img animate__animated animate__wobble animate__infinite"
+                  />
+                  <img
+                    src="/dice.png"
+                    alt="dice"
+                    class="dr-game__loading-img animate__animated animate__headShake animate__infinite"
+                  />
+                </div>
+              </div>
             </div>
             <div class="dr-game__action-history-container">
               <n-scrollbar style="max-height: 250px">
@@ -131,8 +162,32 @@ async function roll() {
         </div>
       </n-card>
     </template>
-    <d-r-player />
-  </d-r-page>
+    <n-result v-if="eventSourceError" status="error" :title="eventSourceError">
+      <template #footer>
+        <n-button color="#ffc526" type="primary" @click="router.push({ name: 'home' })">
+          BACK TO HOME
+        </n-button>
+      </template>
+    </n-result>
+    <n-result
+      v-else-if="!eventSourceError && gameStream?.gameEnded"
+      status="success"
+      :title="
+        gameStream.winnerID
+          ? `The game is over and ${getPlayer(gameStream.winnerID).value?.name} WINS!`
+          : 'GAME OVER'
+      "
+    >
+      <template #footer>
+        <n-button color="#ffc526" type="primary" @click="router.push({ name: 'home' })">
+          BACK TO HOME
+        </n-button>
+      </template>
+    </n-result>
+    <template #footer>
+      <d-r-player />
+    </template>
+  </d-r-game-page>
 </template>
 
 <style scoped lang="scss">
@@ -147,6 +202,11 @@ async function roll() {
     margin: 0;
     color: #ffc526;
     font-size: 2rem;
+  }
+
+  &__card {
+    background-color: rgb(14, 14, 17, 0.9);
+    opacity: 0.9;
   }
 
   &__content {
@@ -168,11 +228,15 @@ async function roll() {
     display: flex;
     gap: 1rem;
     justify-content: space-between;
-    align-items: center;
   }
 
   &__board {
     flex: 1;
+
+    &-current-roll {
+      font-size: 2rem;
+      color: #ffc526;
+    }
   }
 
   &__action-history-container {
@@ -180,6 +244,23 @@ async function roll() {
     padding: 0.5rem;
     border-radius: 3px;
     flex: 1;
+  }
+
+  &__loading {
+    &-dice {
+      position: relative;
+    }
+
+    &-img {
+      &:last-child {
+        position: absolute;
+        z-index: -1;
+        left: 40px;
+      }
+
+      height: auto;
+      width: 50px;
+    }
   }
 }
 </style>
