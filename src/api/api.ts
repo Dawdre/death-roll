@@ -13,7 +13,7 @@ const GAME_TURN_ENDPOINT_URL = `${BASE_AZURE_ENDPOINT_URL}/gameTurn`
 export const LOBBY_STREAM_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR/Lobby"
 export const GAME_STREAM_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR/Game"
 
-export interface AuthenticatedUser {7
+export interface AuthenticatedUser {
   id: string
   name: string
   pwd: string
