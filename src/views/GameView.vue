@@ -82,7 +82,12 @@ async function roll() {
 
       <n-card class="dr-game__card">
         <div class="dr-game__content">
-          <n-h2 class="dr-game__heading">
+          <n-h2 class="dr-game__heading dr-game__heading--avatar">
+            <img
+              class="dr-game__avatar-img"
+              :src="getPlayer(gameStream.playerTurn).value?.avatar"
+              alt="avatar"
+            />
             <template v-if="gameStream.winnerID">
               {{ getPlayer(gameStream.winnerID).value?.name }} WINS!
             </template>
@@ -207,6 +212,13 @@ async function roll() {
     font-size: 2rem;
   }
 
+  &__avatar-img {
+    height: auto;
+    width: 3rem;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+
   &__card {
     background-color: rgb(14, 14, 17, 0.9);
     opacity: 0.9;
@@ -221,6 +233,11 @@ async function roll() {
   &__heading {
     color: #ffc526;
     margin: 0;
+
+    &--avatar {
+      display: flex;
+      align-items: center;
+    }
   }
 
   &__sub-heading {
