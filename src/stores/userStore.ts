@@ -37,10 +37,9 @@ export const useUserStore = defineStore("user", () => {
     
   }
 
-  // if (getUserStorageCredentials.value.ID && getUserStorageCredentials.value.authID) {
-  //   console.log('fetching user', getUserStorageCredentials.value)
-  //   fetchUser()
-  // }
+  if (getUserStorageCredentials.value.ID && getUserStorageCredentials.value.authID) {
+    fetchUser()
+  }
 
   return {
     user,
