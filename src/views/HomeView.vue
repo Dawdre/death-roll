@@ -61,6 +61,7 @@ async function submitForm(validationErrors: FormValidationError) {
   } finally {
     if (authenticatedUserResponse.value) {
       userStore.setUserStorageCrendentials(authenticatedUserResponse.value)
+      userStore.fetchUser()
 
       isAuthenticated.value = true
     }

@@ -1,5 +1,6 @@
 import { fetchAuthenticatedUser, type AuthenticatedUser } from "@/api/api";
 import { useAsyncState } from "@vueuse/core";
+import { c } from "naive-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
@@ -36,9 +37,10 @@ export const useUserStore = defineStore("user", () => {
     
   }
 
-  if (getUserStorageCredentials.value.ID && getUserStorageCredentials.value.authID) {
-    fetchUser()
-  }
+  // if (getUserStorageCredentials.value.ID && getUserStorageCredentials.value.authID) {
+  //   console.log('fetching user', getUserStorageCredentials.value)
+  //   fetchUser()
+  // }
 
   return {
     user,
@@ -49,5 +51,6 @@ export const useUserStore = defineStore("user", () => {
     isAuthenticated,
 
     setUserStorageCrendentials,
+    fetchUser,
   };
 })
