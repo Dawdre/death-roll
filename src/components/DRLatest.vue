@@ -74,6 +74,13 @@ const getAvatar = (match: RecentMatches) => {
       // font-size: 1.2rem;
       padding: 0.5rem 0;
       border-bottom: 1px solid #ffc526;
+      vertical-align: middle;
+
+      img {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+      }
     }
   }
 }

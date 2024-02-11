@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 import { useElementHover } from '@vueuse/core'
+import { BASE_AZURE_ENDPOINT_URL } from '@/api/api'
 import { NCard, NUpload, NH3 } from 'naive-ui'
-import { ref } from 'vue'
 
 defineProps<{ lobbyTokenCount?: number }>()
 
@@ -22,7 +23,7 @@ const { getCoinSize } = useCoinSize()
           class="dr-player__upload"
           file-list-class="dr-player__upload-list"
           trigger-class="dr-player__upload-trigger"
-          :action="`https://ashypls.com/data/apps/DR/Service/userImageUploader/?playerID=${userStore.getUser.id}&playerAuth=${userStore.getUser.auth}`"
+          :action="`https://ashypls-001-site1.ftempurl.com/apps/DR/Service/userImageUploader/?playerID=${userStore.getUser.id}&playerAuth=${userStore.getUser.auth}`"
           list-type="image-card"
           :show-preview-button="false"
           :max="1"
@@ -79,6 +80,8 @@ const { getCoinSize } = useCoinSize()
     grid-column: 1/-1;
     opacity: 0.9;
     background-color: rgb(14, 14, 17, 0.9);
+    position: sticky;
+    bottom: 0;
 
     @media screen and (max-width: 840px) {
       grid-column: 1;

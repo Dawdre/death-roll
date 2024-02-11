@@ -75,7 +75,7 @@ async function roll() {
 <template>
   <d-r-game-page page-class="dr-game">
     <d-r-header />
-    <template v-if="gameStream">
+    <template v-if="gameStream && !gameStream?.gameEnded">
       <n-h2 class="dr-game__title">
         {{ gameStream.gameLobby.name }}
       </n-h2>
@@ -178,6 +178,9 @@ async function roll() {
           : 'GAME OVER'
       "
     >
+      <template #icon>
+        {{ gameStream.winnerID ? '🏆' : '🎲' }}
+      </template>
       <template #footer>
         <n-button color="#ffc526" type="primary" @click="router.push({ name: 'home' })">
           BACK TO HOME

@@ -66,7 +66,9 @@ const getUpdatedTokenCount = computed(
   () =>
     lobbyStream.value?.players.find((p) => p.id === userStore.getUserStorageCredentials.ID)?.tokens
 )
-const isHost = computed(() => lobbyStream.value?.hostID === userStore.getUserStorageCredentials.ID)
+const isItYourTurn = computed(
+  () => lobbyStream.value?.hostID === userStore.getUserStorageCredentials.ID
+)
 
 const { getCoinSize } = useCoinSize()
 
@@ -116,19 +118,20 @@ async function start() {
               <n-number-animation :from="0" :to="lobbyStream.lobbyPot" :show-separator="true" />
             </div>
           </n-h2>
-          <n-h2 class="dr-lobby__heading">POT</n-h2>
-          <n-input-number
-            v-if="isHost"
-            v-model:value="tokenPot"
-            clearable
-            :step="500"
-            :min="0"
-            @update:value="handleUpdatePot(tokenPot)"
-            @clear="tokenPot = 0"
-          />
+          <template v-if="isItYourTurn">
+            <n-h2 class="dr-lobby__heading">POT</n-h2>
+            <n-input-number
+              v-model:value="tokenPot"
+              clearable
+              :step="500"
+              :min="0"
+              @update:value="handleUpdatePot(tokenPot)"
+              @clear="tokenPot = 0"
+            />
+          </template>
         </n-card>
         <n-button
-          v-if="isHost"
+          v-if="isItYourTurn"
           class="dr-lobby__start"
           color="#ffc526"
           type="primary"
@@ -141,7 +144,10 @@ async function start() {
         <n-h2 class="dr-lobby__heading">PLAYERS</n-h2>
         <div class="dr-lobby__players">
           <div
-            :class="['dr-lobby__player', isHost ? 'dr-lobby__player--host' : '']"
+            :class="[
+              'dr-lobby__player',
+              player.id === lobbyStream.hostID ? 'dr-lobby__player--host' : ''
+            ]"
             v-for="player in lobbyStream.players"
             :key="player.id"
           >
