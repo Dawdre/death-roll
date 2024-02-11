@@ -9,7 +9,6 @@ import {
   NMessageProvider
 } from 'naive-ui'
 import { ref } from 'vue'
-import { SpeedInsights } from '@vercel/speed-insights/vue'
 
 const theme = ref<GlobalTheme | null>(darkTheme)
 const themeOverrides: GlobalThemeOverrides = {
@@ -26,7 +25,6 @@ const themeOverrides: GlobalThemeOverrides = {
   <Suspense>
     <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
       <n-message-provider>
-        <SpeedInsights />
         <RouterView />
       </n-message-provider>
     </n-config-provider>
