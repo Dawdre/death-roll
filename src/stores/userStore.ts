@@ -1,6 +1,5 @@
 import { fetchAuthenticatedUser, type AuthenticatedUser } from "@/api/api";
 import { useAsyncState } from "@vueuse/core";
-import { c } from "naive-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 

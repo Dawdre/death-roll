@@ -150,8 +150,6 @@ async function roll() {
               </n-scrollbar>
             </div>
           </div>
-          <span style="color: #ffc526; font-size: large">{{ userStore.getUser?.id }}</span>
-          <span style="color: #ffc526; font-size: large">{{ gameStream.playerTurn }}</span>
 
           <template v-if="gameStream.playerTurn === userStore.getUser?.id">
             <n-input
