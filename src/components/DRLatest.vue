@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { fetchRecentMatches, type RecentMatches } from '@/api/recentMatches.api'
 import { useAsyncState } from '@vueuse/core'
-import { NCard, NH2 } from 'naive-ui'
+import { NCard, NH2, NScrollbar } from 'naive-ui'
 
 const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
 const getAvatar = (match: RecentMatches) => {
@@ -12,31 +12,33 @@ const getAvatar = (match: RecentMatches) => {
 <template>
   <div class="dr-latest">
     <n-h2 class="dr-latest__heading">RECENT DEATHROLLS</n-h2>
-    <n-card class="dr-latest__card" content-class="dr-latest__card-content">
-      <table class="dr-latest__table">
-        <tr>
-          <th>DATE</th>
-          <th>POT</th>
-          <th>WINNER</th>
-        </tr>
-        <tr v-for="match in recentMatches" :key="match.gameID">
-          <td>
-            {{
-              new Intl.DateTimeFormat('en-GB', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric'
-              }).format(new Date(match.gameDate))
-            }}
-          </td>
-          <td>{{ match.tokenPot }}</td>
-          <td><img :src="getAvatar(match)" :alt="match.winner" /> {{ match.winner }}</td>
-        </tr>
-      </table>
-    </n-card>
+    <n-scrollbar style="max-height: 340px">
+      <n-card class="dr-latest__card" content-class="dr-latest__card-content">
+        <table class="dr-latest__table">
+          <tr class="dr-latest__table-head">
+            <th>DATE</th>
+            <th>POT</th>
+            <th>WINNER</th>
+          </tr>
+          <tr v-for="match in recentMatches" :key="match.gameID">
+            <td>
+              {{
+                new Intl.DateTimeFormat('en-GB', {
+                  weekday: 'short',
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric'
+                }).format(new Date(match.gameDate))
+              }}
+            </td>
+            <td>{{ match.tokenPot }}</td>
+            <td><img :src="getAvatar(match)" :alt="match.winner" /> {{ match.winner }}</td>
+          </tr>
+        </table>
+      </n-card>
+    </n-scrollbar>
   </div>
 </template>
 
@@ -61,6 +63,10 @@ const getAvatar = (match: RecentMatches) => {
   &__table {
     width: 100%;
     border-collapse: collapse;
+
+    &-head {
+      background-color: rbg(14, 14, 17, 0.9);
+    }
 
     th {
       color: #ffc526;

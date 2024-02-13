@@ -33,6 +33,14 @@ interface EventSourceGame {
   actionHistory: Array<ActionHistory>
   gameEnded: boolean
   winnerID: string
+  gameAchievements: Array<Achievement>
+}
+
+export interface Achievement {
+  title: string
+  description: string
+  icon: string
+  earnedBy: string
 }
 
 export interface ActionHistory {

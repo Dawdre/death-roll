@@ -21,6 +21,8 @@ import { useUserStore } from '@/stores/userStore'
 import DRGamePage from '@/components/page/DRGamePage.vue'
 import DRHeader from '@/components/DRHeader.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
+import DRAllPlayers from '@/components/DRAllPlayers.vue'
+import DRAchievements from '@/components/DRAchievements.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -75,24 +77,31 @@ async function roll() {
 <template>
   <d-r-game-page page-class="dr-game">
     <d-r-header />
-    <template v-if="gameStream && !gameStream?.gameEnded">
+    <template v-if="gameStream">
       <n-h2 class="dr-game__title">
         {{ gameStream.gameLobby.name }}
       </n-h2>
 
       <n-card class="dr-game__card">
         <div class="dr-game__content">
-          <n-h2 class="dr-game__heading dr-game__heading--avatar">
+          <n-h2
+            v-if="gameStream.winnerID"
+            class="dr-game__heading dr-game__heading--avatar dr-game__heading--winner"
+          >
+            <img src="/crown.png" alt="crown" class="dr-game__heading-crown" />
             <img
-              class="dr-game__avatar-img"
+              :class="[
+                'dr-game__heading-avatar-img',
+                gameStream.winnerID ? 'dr-game__heading-avatar-img--winner' : ''
+              ]"
               :src="getPlayer(gameStream.playerTurn).value?.avatar"
               alt="avatar"
             />
-            <template v-if="gameStream.winnerID">
-              {{ getPlayer(gameStream.winnerID).value?.name }} WINS!
-            </template>
+            {{ getPlayer(gameStream.winnerID).value?.name }} WINS!
+          </n-h2>
+          <n-h2 v-else class="dr-game__heading dr-game__heading--avatar">
             <template
-              v-else-if="
+              v-if="
                 gameStream.playerTurn === userStore.getUser?.id &&
                 !getPlayer(gameStream.playerTurn).value?.isOut
               "
@@ -107,57 +116,63 @@ async function roll() {
             </template>
           </n-h2>
 
-          <div class="dr-game__view">
-            <div class="dr-game__board">
-              <n-h3 v-if="!gameStream.winnerID && !isLoading" class="dr-game__sub-heading">
-                <div style="color: #ffc526">Round {{ gameStream.gameRound }}</div>
-                Current Roll
-                <div class="dr-game__board-current-roll">
-                  <n-number-animation
-                    :from="0"
-                    :to="gameStream.currentRoll"
-                    :show-separator="true"
-                  />
-                </div>
-              </n-h3>
-              <div v-else-if="isLoading" class="dr-game__loading">
-                <div class="dr-game__loading-dice">
-                  <img
-                    src="/dice.png"
-                    alt="dice"
-                    class="dr-game__loading-img animate__animated animate__wobble animate__infinite"
-                  />
-                  <img
-                    src="/dice.png"
-                    alt="dice"
-                    class="dr-game__loading-img animate__animated animate__headShake animate__infinite"
-                  />
-                </div>
+          <div v-if="!gameStream.winnerID" class="dr-game__board">
+            <n-h3 v-if="!gameStream.winnerID && !isLoading" class="dr-game__sub-heading">
+              <div style="color: #ffc526">Round {{ gameStream.gameRound }}</div>
+              Current Roll
+              <div class="dr-game__board-current-roll">
+                <n-number-animation :from="0" :to="gameStream.currentRoll" :show-separator="true" />
+              </div>
+            </n-h3>
+            <div v-else-if="isLoading" class="dr-game__loading">
+              <div class="dr-game__loading-dice">
+                <img
+                  src="/dice.png"
+                  alt="dice"
+                  class="dr-game__loading-img animate__animated animate__wobble animate__infinite"
+                />
+                <img
+                  src="/dice.png"
+                  alt="dice"
+                  class="dr-game__loading-img animate__animated animate__headShake animate__infinite"
+                />
               </div>
             </div>
-            <div class="dr-game__action-history-container">
-              <n-scrollbar style="max-height: 250px">
-                <n-timeline class="dr-game__action-history">
-                  <n-timeline-item
-                    v-for="action in gameStream.actionHistory"
-                    :key="action.playerID"
-                  >
-                    <span ref="timeline" style="text-shadow: 2px 2px black">{{
-                      action.actionDetails
-                    }}</span>
-                  </n-timeline-item>
-                </n-timeline>
-              </n-scrollbar>
-            </div>
+          </div>
+          <div class="dr-game__board-players">
+            <d-r-all-players
+              :players="gameStream.gameLobby.players"
+              :player-turn="!gameStream.gameEnded ? gameStream.playerTurn : ''"
+            />
+          </div>
+
+          <d-r-achievements
+            v-if="gameStream.gameAchievements"
+            class="dr-game__achievements"
+            :achievements="gameStream.gameAchievements"
+          />
+
+          <div class="dr-game__action-history-container">
+            <n-h2 class="dr-game__heading">ACTION HISTORY</n-h2>
+            <n-scrollbar style="max-height: 200px">
+              <n-timeline class="dr-game__action-history">
+                <n-timeline-item v-for="action in gameStream.actionHistory" :key="action.playerID">
+                  <span ref="timeline" class="dr-game__action-history-text">{{
+                    action.actionDetails
+                  }}</span>
+                </n-timeline-item>
+              </n-timeline>
+            </n-scrollbar>
           </div>
 
           <template v-if="gameStream.playerTurn === userStore.getUser?.id">
             <n-input
               v-model:value="myRoll"
+              class="dr-game__input"
               :placeholder="`/roll ${gameStream.currentRoll}`"
               @keydown.enter="roll"
             />
-            <n-button color="#ffc526" @click="roll"> Roll! </n-button>
+            <n-button class="dr-game__roll-button" color="#ffc526" @click="roll">Roll!</n-button>
           </template>
         </div>
       </n-card>
@@ -169,7 +184,7 @@ async function roll() {
         </n-button>
       </template>
     </n-result>
-    <n-result
+    <!-- <n-result
       v-else-if="!eventSourceError && gameStream?.gameEnded"
       status="success"
       :title="
@@ -186,7 +201,7 @@ async function roll() {
           BACK TO HOME
         </n-button>
       </template>
-    </n-result>
+    </n-result> -->
     <template #footer>
       <d-r-player />
     </template>
@@ -207,31 +222,41 @@ async function roll() {
     font-size: 2rem;
   }
 
-  &__avatar-img {
-    height: auto;
-    width: 3rem;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-  }
-
-  &__card {
-    background-color: rgb(14, 14, 17, 0.9);
-    opacity: 0.9;
-  }
-
-  &__content {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
   &__heading {
     color: #ffc526;
+    font-size: 2rem;
     margin: 0;
+
+    &-crown {
+      position: absolute;
+      left: 39px;
+      transform: rotate(17deg);
+      top: -19px;
+      height: auto;
+      width: 2.5rem;
+    }
 
     &--avatar {
       display: flex;
       align-items: center;
+      gap: 0.5rem;
+    }
+
+    &--winner {
+      font-size: 3rem;
+      position: relative;
+    }
+
+    &-avatar-img {
+      height: auto;
+      width: 3rem;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+
+      &--winner {
+        width: 5rem;
+        border: 4px solid #ffc526;
+      }
     }
   }
 
@@ -239,26 +264,65 @@ async function roll() {
     margin: 0;
   }
 
-  &__view {
-    display: flex;
+  &__avatar-img {
+    &--winner {
+      width: 5rem;
+    }
+  }
+
+  &__input,
+  &__roll-button {
+    grid-column: 1 / -1;
+  }
+
+  &__winner-heading {
+    font-size: 3rem;
+  }
+
+  &__card {
+    background-color: rgb(14, 14, 17, 0.9);
+    opacity: 0.9;
+  }
+
+  &__achievements {
+    grid-row: 3;
+    grid-column: 1 / -1;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    justify-content: space-between;
   }
 
   &__board {
-    flex: 1;
+    min-width: 40%;
 
     &-current-roll {
       font-size: 2rem;
       color: #ffc526;
     }
+
+    &-players {
+      grid-row: 2;
+      grid-column: 2;
+    }
   }
 
-  &__action-history-container {
-    border: 1px solid rgb(71, 71, 71);
-    padding: 0.5rem;
-    border-radius: 3px;
-    flex: 1;
+  &__action-history {
+    margin-left: 0.3rem;
+
+    &-container {
+      padding: 0.5rem;
+      border-radius: 3px;
+      justify-self: stretch;
+      grid-row: 2;
+    }
+
+    &-text {
+      text-shadow: 2px 2px black;
+      font-size: 1.1rem;
+    }
   }
 
   &__loading {

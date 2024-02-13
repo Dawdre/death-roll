@@ -11,6 +11,7 @@ import { useUserStore } from '@/stores/userStore'
 import DRLobbyPage from '@/components/page/DRLobbyPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
+import DRAllPlayers from '@/components/DRAllPlayers.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -141,30 +142,7 @@ async function start() {
         </n-button>
       </div>
       <n-card class="dr-lobby__card dr-lobby__card--players" content-class="dr-lobby__card-content">
-        <n-h2 class="dr-lobby__heading">PLAYERS</n-h2>
-        <div class="dr-lobby__players">
-          <div
-            :class="[
-              'dr-lobby__player',
-              player.id === lobbyStream.hostID ? 'dr-lobby__player--host' : ''
-            ]"
-            v-for="player in lobbyStream.players"
-            :key="player.id"
-          >
-            <div class="dr-lobby__player-img">
-              <img :src="player.avatar" :alt="player.name" />
-            </div>
-            <div class="dr-lobby__player-avatar">
-              {{ player.name }}
-              <div class="dr-lobby__player-tokens">
-                <img
-                  :src="`/${getCoinSize(player ?? userStore.getUser!).value}.png`"
-                  alt="gold"
-                />{{ player.tokens }}
-              </div>
-            </div>
-          </div>
-        </div>
+        <d-r-all-players :players="lobbyStream.players" :host-id="lobbyStream.hostID" />
       </n-card>
     </template>
     <n-result v-if="eventSourceError" status="error" :title="eventSourceError">
@@ -238,71 +216,6 @@ async function start() {
 
   &__heading {
     @extend %heading;
-  }
-
-  &__players {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  &__player {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: rgba(7, 7, 8, 0.9);
-    border-radius: 8px;
-    position: relative;
-
-    @media screen and (max-width: 840px) {
-      padding: 0.2rem 0.5rem;
-      gap: 0.1rem;
-    }
-
-    &-img {
-      display: flex;
-      justify-content: center;
-    }
-
-    &--host {
-      border: 1px solid #ffc526;
-
-      &:before {
-        content: ' ';
-        width: 30px;
-        background-image: url('/crown.png');
-        height: 30px;
-        background-repeat: no-repeat;
-        position: absolute;
-        z-index: 9999;
-        top: -13px;
-        right: -12px;
-        transform: rotate(23deg);
-      }
-    }
-
-    &-tokens {
-      display: flex;
-      align-items: center;
-    }
-
-    &-avatar {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      font-size: 1.2rem;
-    }
-
-    &-img {
-      img {
-        height: auto;
-        width: 40px;
-        border-radius: 50%;
-        aspect-ratio: 1 / 1;
-      }
-    }
   }
 }
 </style>

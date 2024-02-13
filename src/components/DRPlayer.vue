@@ -4,7 +4,7 @@ import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 import { useElementHover } from '@vueuse/core'
 import { BASE_AZURE_ENDPOINT_URL } from '@/api/api'
-import { NCard, NUpload, NH3 } from 'naive-ui'
+import { NCard, NUpload, NH3, NSkeleton } from 'naive-ui'
 
 defineProps<{ lobbyTokenCount?: number }>()
 
@@ -29,11 +29,13 @@ const { getCoinSize } = useCoinSize()
           :max="1"
         >
           <img
+            v-if="userStore.getUser.avatar"
             ref="uploadElement"
             class="dr-player__avatar-img"
             :src="userStore.getUser.avatar"
             :alt="userStore.getUser.name"
           />
+          <n-skeleton v-else circle height="80px" class="dr-player__avatar-img" />
 
           <img
             src="/camera-pixel-icon-ash.png"
