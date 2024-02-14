@@ -25,7 +25,7 @@ defineProps<{ pageClass: string; inError?: boolean }>()
 }
 .dr-lobby-page__content {
   display: grid;
-  grid-template-rows: 200px 110px;
+  grid-template-rows: 200px min-content;
   grid-auto-rows: auto;
   grid-template-columns: minmax(35%, 40%) minmax(min-content, 600px);
   row-gap: 1rem;

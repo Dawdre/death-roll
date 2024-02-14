@@ -155,7 +155,7 @@ async function start() {
         <div class="dr-lobby__title-caption">{{ route.params.id }}</div>
         <n-alert
           v-if="!canStartGame"
-          title="You've just tried to play with yourself. Add friends first to make it even better."
+          title="You've just tried to play with yourself. Copy the code above and send to friends!"
           type="error"
           closable
         />

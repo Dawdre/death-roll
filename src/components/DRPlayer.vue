@@ -4,6 +4,7 @@ import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 import { useElementHover } from '@vueuse/core'
 import { NCard, NUpload, NH3, NSkeleton, type UploadFileInfo, useMessage } from 'naive-ui'
+import { useRouter } from 'vue-router'
 
 defineProps<{ lobbyTokenCount?: number }>()
 
@@ -11,6 +12,7 @@ const userStore = useUserStore()
 const uploadElement = ref()
 const isHovered = useElementHover(uploadElement)
 const message = useMessage()
+const router = useRouter()
 
 const { getCoinSize } = useCoinSize()
 
@@ -24,6 +26,18 @@ function handleBeforeUpload(data: { file: UploadFileInfo }) {
   } else {
     return true
   }
+}
+
+function signOut() {
+  userStore.setUserStorageCrendentials({
+    id: '',
+    auth: ''
+  })
+  router.push('/')
+  message.success('You have been signed out', {
+    closable: true,
+    duration: 5000
+  })
 }
 </script>
 
@@ -59,7 +73,12 @@ function handleBeforeUpload(data: { file: UploadFileInfo }) {
             ]"
           />
         </n-upload>
-        <div class="dr-player__avatar-name">{{ userStore.getUser.name }}</div>
+        <div class="dr-player__avatar-name">
+          {{ userStore.getUser.name }}
+          <div v-if="userStore.isAuthenticated" class="dr-player__sign-out" @click="signOut">
+            Sign Out
+          </div>
+        </div>
       </div>
     </div>
     <div class="dr-player__tokens">
@@ -114,6 +133,12 @@ function handleBeforeUpload(data: { file: UploadFileInfo }) {
     border-left: 1px solid #7e7356;
     border-right: 1px solid #7e7356;
     white-space: nowrap;
+  }
+
+  &__sign-out {
+    color: #ffc526;
+    cursor: pointer;
+    font-size: 1.2rem;
   }
 
   &__profile {
