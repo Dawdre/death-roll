@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 import { useElementHover } from '@vueuse/core'
-import { NCard, NUpload, NH3, NSkeleton, type UploadFileInfo, useMessage } from 'naive-ui'
+import { NCard, NUpload, NH3, type UploadFileInfo, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
 defineProps<{ lobbyTokenCount?: number }>()
@@ -17,7 +17,7 @@ const router = useRouter()
 const { getCoinSize } = useCoinSize()
 
 function handleBeforeUpload(data: { file: UploadFileInfo }) {
-  if (data.file.file && data.file.file.size > 1000000) {
+  if (data.file.file && data.file.file.size > 10000000) {
     message.error('File size must be less than 10MB', {
       closable: true,
       duration: 5000
@@ -52,6 +52,7 @@ function signOut() {
           :action="`https://ashypls-001-site1.ftempurl.com/apps/DR/Service/userImageUploader/?playerID=${userStore.getUser.id}&playerAuth=${userStore.getUser.auth}`"
           list-type="image-card"
           :show-preview-button="false"
+          :show-remove-button="false"
           :max="1"
           accept=".png, .jpeg, .jpg, .apng, .gif, .avif, .svg, .webp"
           @before-upload="handleBeforeUpload"
@@ -63,7 +64,6 @@ function signOut() {
             :src="userStore.getUser.avatar"
             :alt="userStore.getUser.name"
           />
-          <n-skeleton v-else circle height="80px" class="dr-player__avatar-img" />
 
           <img
             src="/camera-pixel-icon-ash.png"
@@ -180,6 +180,7 @@ function signOut() {
       width: 80px;
       border-radius: 50%;
       aspect-ratio: 1;
+      object-fit: cover;
       transition: all 0.2s ease-in-out;
 
       &:hover {

@@ -100,9 +100,10 @@ const { getCoinSize } = useCoinSize()
     &-img {
       img {
         height: auto;
-        width: 40px;
+        width: 60px;
         border-radius: 50%;
-        aspect-ratio: 1 / 1;
+        aspect-ratio: 1;
+        object-fit: cover;
       }
     }
   }

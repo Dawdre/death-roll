@@ -18,6 +18,7 @@ import {
   NSkeleton
 } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
+import particlesConfig from '@/particles.json'
 
 import DRGamePage from '@/components/page/DRGamePage.vue'
 import DRHeader from '@/components/DRHeader.vue'
@@ -229,6 +230,11 @@ async function roll() {
       <d-r-player />
     </template>
   </d-r-game-page>
+  <vue-particles
+    v-if="gameStream?.winnerID && gameStream.gameEnded"
+    id="tsparticles"
+    :options="particlesConfig"
+  />
 </template>
 
 <style scoped lang="scss">
@@ -275,6 +281,8 @@ async function roll() {
       width: 3rem;
       border-radius: 50%;
       margin-right: 0.5rem;
+      aspect-ratio: 1;
+      object-fit: cover;
 
       &--winner {
         width: 5rem;
