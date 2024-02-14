@@ -14,7 +14,8 @@ import {
   NTimeline,
   NTimelineItem,
   NScrollbar,
-  NResult
+  NResult,
+  NSkeleton
 } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
 
@@ -85,10 +86,17 @@ async function roll() {
       <n-card class="dr-game__card">
         <div class="dr-game__content">
           <n-h2
-            v-if="gameStream.winnerID"
+            v-if="gameStream.winnerID && !isLoading"
             class="dr-game__heading dr-game__heading--avatar dr-game__heading--winner"
           >
             <img src="/crown.png" alt="crown" class="dr-game__heading-crown" />
+            <n-skeleton
+              v-if="!getPlayer(gameStream.playerTurn).value?.avatar"
+              :sharp="false"
+              circle
+              height="80px"
+              width="80px"
+            />
             <img
               :class="[
                 'dr-game__heading-avatar-img',
@@ -99,7 +107,36 @@ async function roll() {
             />
             {{ getPlayer(gameStream.winnerID).value?.name }} WINS!
           </n-h2>
+          <div v-else-if="isLoading" class="dr-game__loading">
+            <div class="dr-game__loading-dice">
+              <img
+                src="/dice.png"
+                alt="dice"
+                class="dr-game__loading-img animate__animated animate__wobble animate__infinite"
+              />
+              <img
+                src="/dice.png"
+                alt="dice"
+                class="dr-game__loading-img animate__animated animate__headShake animate__infinite"
+              />
+            </div>
+          </div>
           <n-h2 v-else class="dr-game__heading dr-game__heading--avatar">
+            <n-skeleton
+              v-if="!getPlayer(gameStream.playerTurn).value?.avatar"
+              :sharp="false"
+              circle
+              height="80px"
+              width="80px"
+            />
+            <img
+              :class="[
+                'dr-game__heading-avatar-img',
+                gameStream.winnerID ? 'dr-game__heading-avatar-img--winner' : ''
+              ]"
+              :src="getPlayer(gameStream.playerTurn).value?.avatar"
+              alt="avatar"
+            />
             <template
               v-if="
                 gameStream.playerTurn === userStore.getUser?.id &&
@@ -117,27 +154,13 @@ async function roll() {
           </n-h2>
 
           <div v-if="!gameStream.winnerID" class="dr-game__board">
-            <n-h3 v-if="!gameStream.winnerID && !isLoading" class="dr-game__sub-heading">
+            <n-h3 v-if="!gameStream.winnerID" class="dr-game__sub-heading">
               <div style="color: #ffc526">Round {{ gameStream.gameRound }}</div>
               Current Roll
               <div class="dr-game__board-current-roll">
                 <n-number-animation :from="0" :to="gameStream.currentRoll" :show-separator="true" />
               </div>
             </n-h3>
-            <div v-else-if="isLoading" class="dr-game__loading">
-              <div class="dr-game__loading-dice">
-                <img
-                  src="/dice.png"
-                  alt="dice"
-                  class="dr-game__loading-img animate__animated animate__wobble animate__infinite"
-                />
-                <img
-                  src="/dice.png"
-                  alt="dice"
-                  class="dr-game__loading-img animate__animated animate__headShake animate__infinite"
-                />
-              </div>
-            </div>
           </div>
           <div class="dr-game__board-players">
             <d-r-all-players
@@ -165,7 +188,7 @@ async function roll() {
             </n-scrollbar>
           </div>
 
-          <template v-if="gameStream.playerTurn === userStore.getUser?.id">
+          <template v-if="gameStream.playerTurn === userStore.getUser?.id && !gameStream.gameEnded">
             <n-input
               v-model:value="myRoll"
               class="dr-game__input"
@@ -326,6 +349,7 @@ async function roll() {
   }
 
   &__loading {
+    margin: 1rem 0 0 1rem;
     &-dice {
       position: relative;
     }

@@ -4,9 +4,36 @@ import { fetchGame, updatedLobbyPot } from '@/api/api'
 import { useAsyncState, useDebounceFn, useClipboard } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useEventSource } from '@/composables/useEventSource'
-import { NCard, NButton, NInputNumber, NNumberAnimation, NH2, useMessage, NResult } from 'naive-ui'
-import { useCoinSize } from '@/composables/useCoinSize'
+import {
+  NCard,
+  NButton,
+  NInputNumber,
+  NNumberAnimation,
+  NH2,
+  useMessage,
+  NResult,
+  NAlert,
+  NSkeleton
+} from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
+
+// ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+// ⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣦⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+// ⠀⠀⠀⠀⠀⠀⢿⣿⠟⠋⠉⠀⠀⠀⠀⠉⠑⠢⣄⡀⠀⠀⠀⠀⠀
+// ⠀⠀⠀⠀⠀⢠⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣦⡀
+// ⠀⣀⠀⠀⢀⡏⠀⢀⣴⣶⣶⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⠇
+// ⣾⣿⣿⣦⣼⡀⠀⢺⣿⣿⡿⠃⠀⠀⠀⠀⣠⣤⣄⠀⠀⠈⡿⠋⠀
+// ⢿⣿⣿⣿⣿⣇⠀⠤⠌⠁⠀⡀⢲⡶⠄⢸⣿⣿⣿⠀⠀⠀⡇⠀⠀
+// ⠈⢿⣿⣿⣿⣿⣷⣄⡀⠀⠀⠈⠉⠓⠂⠀⠙⠛⠛⠠⠀⡸⠁⠀⠀
+// ⠀⠀⠻⣿⣿⣿⣿⣿⣿⣷⣦⣄⣀⠀⠀⠀⠀⠑⠀⣠⠞⠁⠀⠀⠀
+// ⠀⠀⠀⢸⡏⠉⠛⠛⠛⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀
+// ⠀⠀⠀⠸⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⢿⣿⣿⣿⣿⡄⠀⠀⠀⠀
+// ⠀⠀⠀⢷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⣿⣿⣿⡀⠀⠀⠀
+// ⠀⠀⠀⢸⣆⠀⠀⠀⠀UwU⠀⠀⠀⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀
+// ⠀⠀⠀⢸⣿⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⡟⠻⠿⠟⠀⠀⠀⠀
+// ⠀⠀⠀⠀⣿⣿⣿⣿⣶⠶⠤⠤⢤⣶⣾⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀
+// ⠀⠀⠀⠀⠹⣿⣿⣿⠏⠀⠀⠀⠈⢿⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀
+// ⠀⠀⠀⠀⠀⠈⠉⠉⠀⠀⠀⠀⠀⠀⠉⠉⠀⠀⠀⠀⠀⠀
 
 import DRLobbyPage from '@/components/page/DRLobbyPage.vue'
 import DRHeader from '@/components/DRHeader.vue'
@@ -18,6 +45,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const message = useMessage()
 const tokenPot = ref(0)
+const canStartGame = ref(true)
 const { copy } = useClipboard({ source: route.params.id[0] })
 
 const lobbyURLParams = {
@@ -71,8 +99,6 @@ const isItYourTurn = computed(
   () => lobbyStream.value?.hostID === userStore.getUserStorageCredentials.ID
 )
 
-const { getCoinSize } = useCoinSize()
-
 watchEffect(() => {
   if (lobbyStream.value?.startGame) {
     closeEventSource()
@@ -92,24 +118,49 @@ function copyLobbyID(id: string) {
 }
 
 async function start() {
+  if (lobbyStream.value?.players && lobbyStream.value.players.length < 2) {
+    canStartGame.value = false
+    return
+  }
+
   await startGame()
 }
 </script>
 <template>
   <d-r-lobby-page page-class="dr-lobby" :in-error="!!eventSourceError">
     <d-r-header />
-    <template v-if="lobbyStream">
-      <n-h2 class="dr-lobby__title" @click="copyLobbyID(route.params.id as string)">
+    <template v-if="!lobbyStream && !eventSourceError">
+      <n-skeleton
+        style="grid-row: 2; grid-column: 1 / -1"
+        :height="50"
+        :sharp="false"
+        size="medium"
+      />
+      <n-skeleton :sharp="false" :height="200" size="large" />
+      <n-skeleton style="grid-column: 2" :sharp="false" :height="200" size="large" />
+    </template>
+    <template v-else-if="lobbyStream">
+      <n-h2 class="dr-lobby__title">
         <img class="dr-lobby__title-img" src="/dice.png" alt="header-img" />
-        {{ lobbyStream.name }}
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <path
-            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
-            fill="currentColor"
-          ></path>
-        </svg>
+        <span @click="copyLobbyID(route.params.id as string)">
+          {{ lobbyStream.name }}
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+              fill="currentColor"
+            ></path>
+          </svg>
+        </span>
+
         <div class="dr-lobby__title-caption">{{ route.params.id }}</div>
+        <n-alert
+          v-if="!canStartGame"
+          title="You've just tried to play with yourself. Add friends first to make it even better."
+          type="error"
+          closable
+        />
       </n-h2>
+
       <div class="dr-lobby__pot-container">
         <n-card class="dr-lobby__card dr-lobby__card--pot" content-class="dr-lobby__card-content">
           <n-h2 class="dr-lobby__heading">
@@ -173,6 +224,10 @@ async function start() {
     justify-self: center;
     grid-row: 2;
     grid-column: 1 / -1;
+
+    &-img {
+      margin-right: 0.5rem;
+    }
 
     &-caption {
       font-size: 1.5rem;
