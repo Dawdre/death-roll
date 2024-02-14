@@ -35,7 +35,11 @@ watchEffect(() => {
   }
 })
 
-const { state: lobbyInfo, execute: executeLobby } = useAsyncState(
+const {
+  state: lobbyInfo,
+  execute: executeLobby,
+  error: lobbyError
+} = useAsyncState(
   () =>
     fetchLobby({
       name: lobbyName.value,
@@ -69,9 +73,15 @@ async function submitForm(validationErrors: FormValidationError) {
 }
 
 async function startLobby() {
-  await executeLobby()
-
-  router.push({ name: 'lobby', params: { id: lobbyInfo.value?.id } })
+  try {
+    await executeLobby()
+  } catch (error) {
+    lobbyError.value = 'That lobby name already exists'
+  } finally {
+    if (lobbyInfo.value) {
+      router.push({ name: 'lobby', params: { id: lobbyInfo.value?.id } })
+    }
+  }
 }
 
 function joinLobby() {
@@ -101,6 +111,9 @@ function joinLobby() {
     </template>
     <template v-else>
       <n-card class="dr-card dr-home__create" hoverable content-class="dr-home__card-content">
+        <n-alert v-if="lobbyError" title="There is a problem" type="error" closable>
+          {{ lobbyError }}
+        </n-alert>
         <n-h2 class="dr-card__heading">CREATE A LOBBY</n-h2>
         <n-input v-model:value="lobbyName" placeholder="LOBBY NAME" @keyup.enter="startLobby" />
         <n-button color="#ffc526" type="primary" @click="startLobby">CREATE LOBBY</n-button>

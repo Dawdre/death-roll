@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { fetchRecentMatches, type RecentMatches } from '@/api/recentMatches.api'
 import { useAsyncState } from '@vueuse/core'
-import { NCard, NH2, NScrollbar } from 'naive-ui'
+import { NCard, NH2, NScrollbar, NSkeleton, type UploadFileInfo } from 'naive-ui'
 
 const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
 const getAvatar = (match: RecentMatches) => {
@@ -14,7 +14,17 @@ const getAvatar = (match: RecentMatches) => {
     <n-h2 class="dr-latest__heading">RECENT DEATHROLLS</n-h2>
     <n-scrollbar style="max-height: 340px">
       <n-card class="dr-latest__card" content-class="dr-latest__card-content">
-        <table class="dr-latest__table">
+        <template v-if="!recentMatches">
+          <n-skeleton
+            v-for="n in 6"
+            :key="n"
+            style="margin-bottom: 0.5rem"
+            :sharp="false"
+            :height="30"
+          />
+        </template>
+
+        <table v-else class="dr-latest__table">
           <tr class="dr-latest__table-head">
             <th>DATE</th>
             <th>POT</th>
@@ -34,7 +44,16 @@ const getAvatar = (match: RecentMatches) => {
               }}
             </td>
             <td>{{ match.tokenPot }}</td>
-            <td><img :src="getAvatar(match)" :alt="match.winner" /> {{ match.winner }}</td>
+            <td>
+              <n-skeleton
+                style="display: inline-block"
+                v-if="!getAvatar(match)"
+                circle
+                height="40px"
+                width="40px"
+              />
+              <img v-else :src="getAvatar(match)" :alt="match.winner" /> {{ match.winner }}
+            </td>
           </tr>
         </table>
       </n-card>

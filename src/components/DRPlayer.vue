@@ -3,16 +3,28 @@ import { ref } from 'vue'
 import { useCoinSize } from '@/composables/useCoinSize'
 import { useUserStore } from '@/stores/userStore'
 import { useElementHover } from '@vueuse/core'
-import { BASE_AZURE_ENDPOINT_URL } from '@/api/api'
-import { NCard, NUpload, NH3, NSkeleton } from 'naive-ui'
+import { NCard, NUpload, NH3, NSkeleton, type UploadFileInfo, useMessage } from 'naive-ui'
 
 defineProps<{ lobbyTokenCount?: number }>()
 
 const userStore = useUserStore()
 const uploadElement = ref()
 const isHovered = useElementHover(uploadElement)
+const message = useMessage()
 
 const { getCoinSize } = useCoinSize()
+
+function handleBeforeUpload(data: { file: UploadFileInfo }) {
+  if (data.file.file && data.file.file.size > 1000000) {
+    message.error('File size must be less than 10MB', {
+      closable: true,
+      duration: 5000
+    })
+    return false
+  } else {
+    return true
+  }
+}
 </script>
 
 <template>
@@ -27,6 +39,8 @@ const { getCoinSize } = useCoinSize()
           list-type="image-card"
           :show-preview-button="false"
           :max="1"
+          accept=".png, .jpeg, .jpg, .apng, .gif, .avif, .svg, .webp"
+          @before-upload="handleBeforeUpload"
         >
           <img
             v-if="userStore.getUser.avatar"
