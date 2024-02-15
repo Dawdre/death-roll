@@ -128,7 +128,7 @@ async function start() {
 </script>
 <template>
   <d-r-lobby-page page-class="dr-lobby" :in-error="!!eventSourceError">
-    <d-r-header />
+    <d-r-header @go-home="closeEventSource" />
     <template v-if="!lobbyStream && !eventSourceError">
       <n-skeleton
         style="grid-row: 2; grid-column: 1 / -1"

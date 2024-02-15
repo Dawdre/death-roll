@@ -37,7 +37,12 @@ const gameUrlParams = {
   user: userStore.getUserStorageCredentials.ID ?? '',
   game: Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 }
-const { eventSourceGameData: gameStream, startStream, eventSourceError } = useEventSource(true)
+const {
+  eventSourceGameData: gameStream,
+  startStream,
+  eventSourceError,
+  closeEventSource
+} = useEventSource(true)
 
 startStream(gameUrlParams)
 
@@ -78,7 +83,7 @@ async function roll() {
 
 <template>
   <d-r-game-page page-class="dr-game">
-    <d-r-header />
+    <d-r-header @go-home="closeEventSource" />
     <template v-if="gameStream">
       <n-h2 class="dr-game__title">
         {{ gameStream.gameLobby.name }}
@@ -144,10 +149,8 @@ async function roll() {
                 !getPlayer(gameStream.playerTurn).value?.isOut
               "
             >
-              IT'S YOUR TURN!
-            </template>
-            <template v-else-if="getPlayer(gameStream.playerTurn).value?.isOut">
-              YOU ROLLED A 1 AND ARE OUT!
+              YOU HAVE {{ gameStream.turnTimer }}s TO ROLL {{ gameStream.currentRoll }} OR YOU'RE
+              OUT!
             </template>
             <template v-else>
               {{ getPlayer(gameStream.playerTurn).value?.name.toUpperCase() }}'S TURN!
@@ -198,6 +201,13 @@ async function roll() {
             />
             <n-button class="dr-game__roll-button" color="#ffc526" @click="roll">Roll!</n-button>
           </template>
+          <n-button
+            v-else-if="gameStream.gameEnded"
+            class="dr-game__roll-button"
+            color="#ffc526"
+            @click="router.push({ name: 'home' })"
+            >Start Over</n-button
+          >
         </div>
       </n-card>
     </template>

@@ -34,6 +34,7 @@ interface EventSourceGame {
   gameEnded: boolean
   winnerID: string
   gameAchievements: Array<Achievement>
+  turnTimer: number
 }
 
 export interface Achievement {
