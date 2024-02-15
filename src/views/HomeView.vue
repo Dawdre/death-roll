@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue'
 import { useAsyncState } from '@vueuse/core'
-import { authUser, fetchAuthenticatedUser, type AuthenticatedUser, fetchLobby } from '@/api/api'
+import { authUser, type AuthenticatedUser, fetchLobby } from '@/api/api'
 import { useRouter } from 'vue-router'
-import { type FormValidationError, NH1, NH2, NAlert, NCard, NInput, NButton } from 'naive-ui'
+import { type FormValidationError, NH2, NAlert, NCard, NInput, NButton } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
 
 import DRPage from '@/components/page/DRPage.vue'
@@ -11,6 +11,7 @@ import DRHeader from '@/components/DRHeader.vue'
 import DRLoginForm from '@/components/DRLoginForm.vue'
 import DRPlayer from '@/components/DRPlayer.vue'
 import DRLatest from '@/components/DRLatest.vue'
+import DRLeaderboard from '@/components/DRLeaderboard.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -87,17 +88,6 @@ async function startLobby() {
 function joinLobby() {
   router.push({ name: 'lobby', params: { id: lobbyID.value } })
 }
-
-// function logout() {
-//   localStorage.removeItem('authenticatedUser')
-//   localStorage.removeItem('authenticatedUserId')
-
-//   isAuthenticated.value = false
-//   authenticatedUser.value = {
-//     ID: null,
-//     authID: null
-//   }
-// }
 </script>
 
 <template>
@@ -133,6 +123,7 @@ function joinLobby() {
       </div>
 
       <d-r-latest />
+      <d-r-leaderboard />
     </template>
     <template #footer>
       <d-r-player />

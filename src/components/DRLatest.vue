@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { fetchRecentMatches, type RecentMatches } from '@/api/recentMatches.api'
 import { useAsyncState } from '@vueuse/core'
-import { NCard, NH2, NScrollbar, NSkeleton, type UploadFileInfo } from 'naive-ui'
+import { NCard, NH2, NScrollbar, NSkeleton } from 'naive-ui'
 
 const { state: recentMatches } = useAsyncState(fetchRecentMatches, null)
 const getAvatar = (match: RecentMatches) => {
@@ -63,8 +63,9 @@ const getAvatar = (match: RecentMatches) => {
 
 <style lang="scss" scoped>
 .dr-latest {
+  grid-column: 1;
+
   @media screen and (max-width: 840px) {
-    grid-column: 1;
     grid-row: auto;
   }
 
@@ -96,7 +97,7 @@ const getAvatar = (match: RecentMatches) => {
 
     td {
       color: #fff;
-      // font-size: 1.2rem;
+      font-size: 1.2rem;
       padding: 0.5rem 0;
       border-bottom: 1px solid #ffc526;
       vertical-align: middle;
