@@ -15,9 +15,12 @@ import {
   NTimelineItem,
   NScrollbar,
   NResult,
-  NSkeleton
+  NSkeleton,
+  messageDark,
+  useMessage
 } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
+import { sendChatMessage } from '@/api/chat.api'
 import particlesConfig from '@/particles.json'
 
 import DRGamePage from '@/components/page/DRGamePage.vue'
@@ -31,7 +34,9 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const myRoll = ref('')
+const rollInput = ref<HTMLElement | null>(null)
 const timeline = ref<Array<HTMLElement | null>>([])
+const message = useMessage()
 
 const gameUrlParams = {
   user: userStore.getUserStorageCredentials.ID ?? '',
@@ -51,6 +56,11 @@ const { execute: takeTurn, isLoading } = useAsyncState(fetchGameTurn, null, {
   immediate: false
 })
 
+const { execute: sendChat } = useAsyncState(sendChatMessage, null, {
+  throwError: true,
+  immediate: false
+})
+
 const getPlayer = (id: string) =>
   computed(() => gameStream.value?.gameLobby.players.find((player) => player.id === id))
 
@@ -64,7 +74,10 @@ watchEffect(() => {
 })
 
 async function roll() {
-  if (myRoll.value.trim()) {
+  if (
+    myRoll.value.trim().startsWith('/roll') &&
+    gameStream.value?.playerTurn === userStore.getUser?.id
+  ) {
     console.log('Rolling...', gameStream.value?.id)
 
     await takeTurn(0, {
@@ -73,11 +86,23 @@ async function roll() {
       authID: userStore.getUser?.auth,
       action: 'roll'
     })
-
-    myRoll.value = ''
+  } else if (myRoll.value.startsWith('/roll')) {
+    message.info('It is not your turn to roll! Send a message if you want to chat!')
   } else {
-    console.log('Invalid roll command')
+    if (gameStream.value) {
+      await sendChat(0, {
+        gameID: gameStream.value.id,
+        playerID: userStore.getUser?.id!,
+        message: myRoll.value
+      })
+    }
   }
+
+  if (rollInput.value) {
+    rollInput.value.focus()
+  }
+
+  myRoll.value = ''
 }
 </script>
 
@@ -143,15 +168,15 @@ async function roll() {
               :src="getPlayer(gameStream.playerTurn).value?.avatar"
               alt="avatar"
             />
-            <template
+            <div
               v-if="
                 gameStream.playerTurn === userStore.getUser?.id &&
                 !getPlayer(gameStream.playerTurn).value?.isOut
               "
             >
-              YOU HAVE {{ gameStream.turnTimer }}s TO ROLL {{ gameStream.currentRoll }} OR YOU'RE
-              OUT!
-            </template>
+              YOU HAVE <span style="color: #fff">{{ gameStream.turnTimer }}</span
+              >s TO "/ROLL"
+            </div>
             <template v-else>
               {{ getPlayer(gameStream.playerTurn).value?.name.toUpperCase() }}'S TURN!
             </template>
@@ -184,25 +209,40 @@ async function roll() {
             <n-scrollbar style="max-height: 200px">
               <n-timeline class="dr-game__action-history">
                 <n-timeline-item v-for="action in gameStream.actionHistory" :key="action.playerID">
-                  <span ref="timeline" class="dr-game__action-history-text">{{
-                    action.actionDetails
-                  }}</span>
+                  <div v-if="action.type === 'chat'" class="dr-game__action-history-chat">
+                    <img src="/chat.png" alt="chat" />
+                    <span
+                      ref="timeline"
+                      class="dr-game__action-history-text dr-game__action-history-text--chat"
+                    >
+                      {{ JSON.parse(action.actionDetails).user }}:
+                    </span>
+                    <span ref="timeline" class="dr-game__action-history-text">
+                      {{ JSON.parse(action.actionDetails).message }}
+                    </span>
+                  </div>
+                  <span v-else ref="timeline" class="dr-game__action-history-text">
+                    {{ action.actionDetails }}
+                  </span>
                 </n-timeline-item>
               </n-timeline>
             </n-scrollbar>
           </div>
 
-          <template v-if="gameStream.playerTurn === userStore.getUser?.id && !gameStream.gameEnded">
+          <template v-if="!gameStream.gameEnded">
             <n-input
+              ref="rollInput"
               v-model:value="myRoll"
               class="dr-game__input"
-              :placeholder="`/roll ${gameStream.currentRoll}`"
+              :placeholder="`Send a message or /roll`"
               @keydown.enter="roll"
             />
-            <n-button class="dr-game__roll-button" color="#ffc526" @click="roll">Roll!</n-button>
+            <n-button class="dr-game__roll-button" color="#ffc526" @click="roll">
+              {{ gameStream.playerTurn === userStore.getUser?.id ? 'Roll!' : 'Send Message' }}
+            </n-button>
           </template>
           <n-button
-            v-else-if="gameStream.gameEnded"
+            v-else
             class="dr-game__roll-button"
             color="#ffc526"
             @click="router.push({ name: 'home' })"
@@ -218,24 +258,6 @@ async function roll() {
         </n-button>
       </template>
     </n-result>
-    <!-- <n-result
-      v-else-if="!eventSourceError && gameStream?.gameEnded"
-      status="success"
-      :title="
-        gameStream.winnerID
-          ? `The game is over and ${getPlayer(gameStream.winnerID).value?.name} WINS!`
-          : 'GAME OVER'
-      "
-    >
-      <template #icon>
-        {{ gameStream.winnerID ? '🏆' : '🎲' }}
-      </template>
-      <template #footer>
-        <n-button color="#ffc526" type="primary" @click="router.push({ name: 'home' })">
-          BACK TO HOME
-        </n-button>
-      </template>
-    </n-result> -->
     <template #footer>
       <d-r-player />
     </template>
@@ -253,7 +275,10 @@ async function roll() {
 }
 .n-timeline.n-timeline--left-placement .n-timeline-item .n-timeline-item-content {
   display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
+
 .dr-game {
   &__title {
     margin: 0;
@@ -363,6 +388,16 @@ async function roll() {
     &-text {
       text-shadow: 2px 2px black;
       font-size: 1.1rem;
+
+      &--chat {
+        color: #ffc526;
+      }
+    }
+
+    &-chat {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
     }
   }
 

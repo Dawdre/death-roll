@@ -85,7 +85,7 @@ const { execute: updatePot } = useAsyncState(
   }
 )
 
-const debounceUpdatePot = useDebounceFn(updatePot, 1000, { maxWait: 4000 })
+const debounceUpdatePot = useDebounceFn(updatePot, 1000, { maxWait: 2000 })
 async function handleUpdatePot(value: number) {
   tokenPot.value = value
   await debounceUpdatePot(tokenPot.value)
