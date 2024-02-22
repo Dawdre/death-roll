@@ -33,7 +33,7 @@ function signOut() {
     id: '',
     auth: ''
   })
-  router.push('/')
+  router.push({ name: 'home' })
   message.success('You have been signed out', {
     closable: true,
     duration: 5000

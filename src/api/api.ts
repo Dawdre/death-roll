@@ -1,5 +1,7 @@
 import type { ActionHistory } from "@/composables/useEventSource"
+import { createFetch, type UseFetchOptions } from "@vueuse/core"
 
+export const BASE_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR"
 export const BASE_ENDPOINT_URL = "https://ashypls.com/data/apps/DR/Service/Service.asmx"
 export const BASE_AZURE_ENDPOINT_URL = "https://ashypls-001-site1.ftempurl.com/apps/DR/Service/Service.asmx"
 
@@ -94,4 +96,17 @@ export async function fetchGameTurn<T>(data: T) {
 
 export async function updatedLobbyPot<T>(data: T): Promise<Lobby> {
   return await fetchPost<Lobby>(UPDATE_LOBBY_POT_ENDPOINT_URL, data)
+}
+
+const defaultFetchOptions: UseFetchOptions = {
+  immediate: true,
+}
+
+export function useApi<T = void>(url: string, { immediate }: UseFetchOptions = defaultFetchOptions) {
+  const baseFetch = createFetch({
+    baseUrl: `${BASE_URL}`,
+    options: { immediate },
+  });
+
+  return baseFetch<T>(url).json();
 }

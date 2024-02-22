@@ -2,7 +2,7 @@
 import { ref, watchEffect } from 'vue'
 import { useAsyncState } from '@vueuse/core'
 import { authUser, type AuthenticatedUser, fetchLobby } from '@/api/api'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { type FormValidationError, NH2, NAlert, NCard, NInput, NButton } from 'naive-ui'
 import { useUserStore } from '@/stores/userStore'
 
@@ -14,12 +14,17 @@ import DRLatest from '@/components/DRLatest.vue'
 import DRLeaderboard from '@/components/DRLeaderboard.vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const isAuthenticated = ref(false)
 const lobbyName = ref('')
 const lobbyID = ref('')
 const formValue = ref({ uname: '', pwd: '' })
+
+if (route.query.code) {
+  userStore.fetchUserTest(route.query.code as string)
+}
 
 const {
   state: authenticatedUserResponse,

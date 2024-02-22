@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NForm, NFormItem, NInput, NButton, type FormInst, c } from 'naive-ui'
+import { NForm, NFormItem, NInput, NButton, type FormInst } from 'naive-ui'
 import { ref, computed } from 'vue'
 
 const emit = defineEmits(['update:modelValue', 'submitForm'])
@@ -25,6 +25,10 @@ async function submit() {
     console.log(errors, 'error')
   }
 }
+
+async function discord() {
+  window.location.replace(import.meta.env.VITE_OUTH2_DISCORD_AUTH_URL)
+}
 </script>
 <template>
   <main>
@@ -42,6 +46,7 @@ async function submit() {
       </n-form-item>
 
       <n-button type="primary" color="#ffc526" @click="submit">Sign In</n-button>
+      <n-button type="info" color="#5865f2" @click="discord">Sign in with Discord</n-button>
     </n-form>
   </main>
 </template>

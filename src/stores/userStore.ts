@@ -1,4 +1,4 @@
-import { fetchAuthenticatedUser, type AuthenticatedUser } from "@/api/api";
+import { fetchAuthenticatedUser, type AuthenticatedUser, useApi } from "@/api/api";
 import { useAsyncState } from "@vueuse/core";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
@@ -22,16 +22,34 @@ export const useUserStore = defineStore("user", () => {
     userStorageCredentials.value.authID = localStorage.getItem('authenticatedUser')
   }
 
-  const { state: userInfo, execute: authenticateUser } = useAsyncState(fetchAuthenticatedUser, null, {
+  const { state: userInfo, execute: fetchAuthenticatedUserInfo } = useAsyncState(fetchAuthenticatedUser, null, {
     immediate: false,
   });
+
+  
+
+  async function fetchUserTest(code: string | null) {
+    if (user.value) {
+      return;
+    };
+
+    const { data: outhData, execute: fetchAuthenticatedUserInfoTest } = useApi<AuthenticatedUser>(
+      `/Auth/?code=${code}`, 
+      { immediate: false }
+    )
+
+    await fetchAuthenticatedUserInfoTest()
+    user.value = outhData.value;
+
+    setUserStorageCrendentials(outhData.value)
+  }
 
   async function fetchUser() {
     if (user.value) {
       return;
     };
-
-    await authenticateUser(0, getUserStorageCredentials.value)
+   
+    await fetchAuthenticatedUserInfo(0, getUserStorageCredentials.value)
     user.value = userInfo.value;
     
   }
@@ -50,5 +68,6 @@ export const useUserStore = defineStore("user", () => {
 
     setUserStorageCrendentials,
     fetchUser,
+    fetchUserTest,
   };
 })
