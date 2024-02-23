@@ -31,7 +31,8 @@ export const useUserStore = defineStore("user", () => {
       return;
     };
 
-    const params = new URLSearchParams({ code: code || '', dev: import.meta.env.DEV ? 'true' : ''})
+    const isDev = import.meta.env.DEV ? { dev: 'true' } : {};
+    const params = new URLSearchParams({ code: code || '', ...isDev })
 
     const { data: oauthData } = await useApi<AuthenticatedUser>(
       `/Auth/?${params.toString()}`
