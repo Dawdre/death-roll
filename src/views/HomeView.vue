@@ -22,10 +22,6 @@ const lobbyName = ref('')
 const lobbyID = ref('')
 const formValue = ref({ uname: '', pwd: '' })
 
-if (route.query.code) {
-  userStore.fetchUserTest(route.query.code as string)
-}
-
 const {
   state: authenticatedUserResponse,
   execute: authenticateUser,
@@ -93,6 +89,12 @@ async function startLobby() {
 function joinLobby() {
   router.push({ name: 'lobby', params: { id: lobbyID.value } })
 }
+
+if (route.query.code) {
+  await userStore.fetchNewUser(route.query.code as string)
+
+  router.push({ name: 'home' })
+}
 </script>
 
 <template>
@@ -131,7 +133,7 @@ function joinLobby() {
       <d-r-leaderboard />
     </template>
     <template #footer>
-      <d-r-player />
+      <d-r-player @is-signed-out="isAuthenticated = false" />
     </template>
   </d-r-page>
 </template>

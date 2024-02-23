@@ -7,6 +7,7 @@ import { NCard, NUpload, NH3, type UploadFileInfo, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
 defineProps<{ lobbyTokenCount?: number }>()
+const emit = defineEmits(['isSignedOut'])
 
 const userStore = useUserStore()
 const uploadElement = ref()
@@ -38,11 +39,17 @@ function signOut() {
     closable: true,
     duration: 5000
   })
+
+  emit('isSignedOut')
 }
 </script>
 
 <template>
-  <n-card v-if="userStore.getUser" class="dr-player-container" content-class="dr-player">
+  <n-card
+    v-if="userStore.getUser && userStore.isAuthenticated"
+    class="dr-player-container"
+    content-class="dr-player"
+  >
     <div class="dr-player__profile">
       <div class="dr-player__avatar">
         <n-upload

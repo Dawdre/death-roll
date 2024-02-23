@@ -26,22 +26,20 @@ export const useUserStore = defineStore("user", () => {
     immediate: false,
   });
 
-  
-
-  async function fetchUserTest(code: string | null) {
+  async function fetchNewUser(code: string | null) {
     if (user.value) {
       return;
     };
 
-    const { data: outhData, execute: fetchAuthenticatedUserInfoTest } = useApi<AuthenticatedUser>(
-      `/Auth/?code=${code}`, 
-      { immediate: false }
+    const params = new URLSearchParams({ code: code || '', dev: import.meta.env.DEV ? 'true' : ''})
+
+    const { data: oauthData } = await useApi<AuthenticatedUser>(
+      `/Auth/?${params.toString()}`
     )
 
-    await fetchAuthenticatedUserInfoTest()
-    user.value = outhData.value;
+    user.value = oauthData.value;
 
-    setUserStorageCrendentials(outhData.value)
+    setUserStorageCrendentials(oauthData.value)
   }
 
   async function fetchUser() {
@@ -49,9 +47,12 @@ export const useUserStore = defineStore("user", () => {
       return;
     };
    
-    await fetchAuthenticatedUserInfo(0, getUserStorageCredentials.value)
+    await fetchAuthenticatedUserInfo(0, {
+      ...getUserStorageCredentials.value,
+      dev: !!import.meta.env.DEV
+    })
+
     user.value = userInfo.value;
-    
   }
 
   if (getUserStorageCredentials.value.ID && getUserStorageCredentials.value.authID) {
@@ -68,6 +69,6 @@ export const useUserStore = defineStore("user", () => {
 
     setUserStorageCrendentials,
     fetchUser,
-    fetchUserTest,
+    fetchNewUser,
   };
 })

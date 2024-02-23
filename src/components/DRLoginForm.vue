@@ -31,27 +31,58 @@ async function discord() {
 }
 </script>
 <template>
-  <main>
-    <n-form ref="formRef" :model="inputValue" :rules="formRules" class="dr-login-form">
-      <n-form-item label="Username" path="username">
-        <n-input v-model:value="inputValue.uname" placeholder="" />
-      </n-form-item>
-      <n-form-item label="Password" path="password">
-        <n-input
-          v-model:value="inputValue.pwd"
-          type="password"
-          show-password-on="click"
-          placeholder=""
-        />
-      </n-form-item>
+  <n-form ref="formRef" :model="inputValue" :rules="formRules" class="dr-login-form">
+    <n-form-item label="Username" path="username">
+      <n-input v-model:value="inputValue.uname" placeholder="" />
+    </n-form-item>
+    <n-form-item label="Password" path="password">
+      <n-input
+        v-model:value="inputValue.pwd"
+        type="password"
+        show-password-on="click"
+        placeholder=""
+      />
+    </n-form-item>
 
+    <div class="dr-login-form__buttons">
       <n-button type="primary" color="#ffc526" @click="submit">Sign In</n-button>
-      <n-button type="info" color="#5865f2" @click="discord">Sign in with Discord</n-button>
-    </n-form>
-  </main>
+      <n-button
+        class="dr-login-form__button dr-login-form__button--discord"
+        type="info"
+        color="#5865f2"
+        @click="discord"
+      >
+        <template #icon>
+          <img class="dr-login-form__button-icon" src="/discord.png" alt="Discord" />
+        </template>
+        <span style="color: #fff; text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5)"
+          >Sign In with Discord</span
+        >
+      </n-button>
+    </div>
+  </n-form>
 </template>
 <style scoped lang="scss">
 .dr-login-form {
   margin-top: 1rem;
+
+  &__buttons {
+    display: flex;
+    gap: 1rem;
+  }
+
+  &__button {
+    &--discord {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+    }
+  }
+
+  &__button-icon {
+    margin-right: 0.5rem;
+    height: auto;
+    width: 25px;
+  }
 }
 </style>
