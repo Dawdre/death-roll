@@ -25,6 +25,26 @@ export interface AuthenticatedUser {
   rollsLost: number
   passesCount: number
   avatar: string
+  matchHistory: Array<MatchHistory>,
+  playerRank: number,
+  playerAchievements: Array<PlayerAchievement>,
+  discordAccentColor: number,
+  discordBanner: null,
+}
+
+export interface PlayerAchievement {
+  achievementName: string
+  ahcievementIcon: string
+  count: number 
+}
+
+export interface MatchHistory {
+  gameID: string
+  gameDate: string
+  tokenPot: number
+  winner: string
+  winnerAvatar: string
+  players: Array<Player>
 }
 
 export interface Lobby {

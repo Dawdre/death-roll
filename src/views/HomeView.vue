@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { ref } from 'vue'
 import { useAsyncState } from '@vueuse/core'
 import { authUser, type AuthenticatedUser, fetchLobby } from '@/api/api'
 import { useRoute, useRouter } from 'vue-router'
@@ -17,7 +17,6 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 
-const isAuthenticated = ref(false)
 const lobbyName = ref('')
 const lobbyID = ref('')
 const formValue = ref({ uname: '', pwd: '' })
@@ -29,12 +28,6 @@ const {
 } = useAsyncState<AuthenticatedUser | null>(() => authUser(formValue.value), null, {
   immediate: false,
   throwError: true
-})
-
-watchEffect(() => {
-  if (userStore.isAuthenticated) {
-    isAuthenticated.value = true
-  }
 })
 
 const {
@@ -63,13 +56,10 @@ async function submitForm(validationErrors: FormValidationError) {
     await authenticateUser()
   } catch (error) {
     authError.value = 'Invalid username or password'
-    isAuthenticated.value = false
   } finally {
     if (authenticatedUserResponse.value) {
       userStore.setUserStorageCrendentials(authenticatedUserResponse.value)
       userStore.fetchUser()
-
-      isAuthenticated.value = true
     }
   }
 }
@@ -100,7 +90,7 @@ if (route.query.code) {
 <template>
   <d-r-page page-class="dr-home">
     <d-r-header />
-    <template v-if="!isAuthenticated">
+    <template v-if="!userStore.isAuthenticated">
       <n-alert v-if="authError" title="There is a problem" type="error" closable>
         {{ authError }}
       </n-alert>
@@ -133,7 +123,7 @@ if (route.query.code) {
       <d-r-leaderboard />
     </template>
     <template #footer>
-      <d-r-player @is-signed-out="isAuthenticated = false" />
+      <d-r-player />
     </template>
   </d-r-page>
 </template>
